@@ -1,0 +1,13 @@
+name: SMapper
+
+sensors:
+    - name: lidar
+      ws: "$HOME/smapper/software/ros_ws"
+      cmd: "ros2 launch smapper_bringup lidar.launch.py"
+      env:
+          - RMW_IMPLEMENTATION:rmw_cyclonedds_cpp
+    - name: argus_camera
+      ws: "$HOME/smapper/software/ros_ws"
+      cmd: "ros2 launch smapper_bringup lidar.launch.py"
+      env:
+          - RMW_IMPLEMENTATION:rmw_cyclonedds_cpp
