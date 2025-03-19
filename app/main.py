@@ -8,6 +8,7 @@ from fastapi.responses import HTMLResponse
 
 from app.routers import sensors
 from app.config.settings import APISettings
+from app.routers.v1 import sensors_router, bags_router, power_router
 
 # To fix issue with CORS when requesting on the browser
 origins = [
@@ -35,7 +36,9 @@ app = FastAPI(
 )
 
 
-app.include_router(sensors.router)
+app.include_router(sensors_router)
+app.include_router(bags_router)
+app.include_router(power_router)
 
 app.add_middleware(
     CORSMiddleware,
