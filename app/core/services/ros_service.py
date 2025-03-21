@@ -1,4 +1,6 @@
 from .service import ServiceState, Service
+import os
+from app.logger import logger
 
 
 class RosService(Service):
@@ -13,16 +15,14 @@ class RosService(Service):
         executable: str,
         env: dict[str, str] | None = None,
     ) -> None:
-        super().__init__(name, id, [], env)
+        super().__init__(name, id, "", env)
 
         if not os.path.exists(ws):
-            self._logger.error(
-                f"Workspace {ws} does not exist. Service will be unavailable"
-            )
+            logger.error(f"Workspace {ws} does not exist. Service will be unavailable")
             self._state = ServiceState.ERROR
 
         if not self.__is_ros_available(distro):
-            self._logger.error(
+            logger.error(
                 "Ros does not seem to be installed. Service will be unavailable."
             )
             self._state = ServiceState.ERROR
@@ -49,7 +49,7 @@ class RosService(Service):
             cmd += f"ros2 launch {pkg_name} {executable}"
             return cmd
 
-        self._logger.error(
+        logger.error(
             f"{exec_type} is an unknown ROS executable type. Available types are NODE or LAUNCH"
         )
         return None
