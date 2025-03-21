@@ -46,8 +46,8 @@ class Configuration(BaseModel):
     revision: str
     device_name: str
 
-    @classmethod
-    def load(cls, path: str) -> "Configuration":
-        with open(path, "r") as f:
-            data = yaml.safe_load(f)
-        return cls.model_validate(data)
+
+def load_config(path: str) -> Configuration:
+    with open(path, "r") as f:
+        data = yaml.safe_load(f)
+    return Configuration.model_validate(data)
