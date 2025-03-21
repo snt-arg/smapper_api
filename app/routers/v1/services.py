@@ -1,21 +1,15 @@
 from functools import lru_cache
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from app.config.config import Configuration
 from app.core.service_manager import (
     ServiceManager,
-    ServiceManagerException,
-    get_service_manager,
 )
-from app.core.services.service import ServiceException, ServiceState
+from app.core.services.service import ServiceState
+from app.dependencies import get_configuration, get_service_manager
 
 
 router = APIRouter(prefix="/api/v1")
-
-
-@lru_cache()
-def get_configuration():
-    return Configuration.load("app/config/device.yaml")
 
 
 @router.get("/services", description="Get a list of available services")

@@ -89,10 +89,3 @@ class ServiceManager:
                 f"Service with id {id} does not yet exist. It must be created first."
             )
         return service
-
-
-__manager = ServiceManager()
-
-
-def get_service_manager():
-    return __manager
