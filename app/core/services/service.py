@@ -3,10 +3,11 @@ import time
 import os
 import subprocess
 from typing import Optional, Callable
-import logging
+from app.logger import logger
 
-# TODO: Logging is not working properly
-logger = logging.getLogger("smapper_api")
+
+# TODO: add support for cwd argument
+# This allows a user to specify the cwd, without the need to include in the command cd ... &&
 
 
 # Custom Exception Classes
@@ -57,7 +58,9 @@ class Service:
 
     def _set_state(self, new_state: ServiceState) -> None:
         if self._state != new_state:
-            logger.debug(f"Changing state: {self._state} -> {new_state.name}")
+            logger.debug(
+                f"[service:{self.id}] Changing state: {self._state.name} -> {new_state.name}"
+            )
             self._state = new_state
             if self._on_state_change:
                 self._on_state_change(self._state)
@@ -75,13 +78,15 @@ class Service:
             - `ACTIVE` if the service starts successfully.
             - `ERROR` if there is any failure.
         """
+        self.poll()
+
         if self._state == ServiceState.ERROR:
-            raise ServiceException(f"Service '{self.name}' is unavailable.")
+            raise ServiceException(f"[service:{self.id}] Service is unavailable.")
 
         self._set_state(ServiceState.STARTING)
 
         try:
-            logger.info(f"Starting service: {self.id}:{self.name}")
+            logger.info(f"[service:{self.id}] Starting service")
             # Set up environment variables for the subprocess
             full_env = {**os.environ, **self._env}
             self._process = subprocess.Popen(
@@ -96,16 +101,18 @@ class Service:
 
             self._set_state(ServiceState.ACTIVE)
         except Exception as e:
-            logger.error(f"Failed to start process with error: {e}")
+            logger.error(f"[service:{self.id}] Failed to start process with error: {e}")
             self._set_state(ServiceState.ERROR)
-            raise ServiceException(f"Failed to start service '{self.name}'.")
+            raise ServiceException(
+                f"[service:{self.id}] Failed to start service '{self.name}'."
+            )
 
         # Check if the process is running
         retcode = self._process.poll()
         if retcode is not None and retcode > 0:
-            logger.error(f"Failed to start process for service '{self.name}'.")
+            logger.error(f"[service:{self.id}] Failed to start process.")
             self._set_state(ServiceState.ERROR)
-            raise ServiceException(f"Failed to start service '{self.name}'.")
+            raise ServiceException(f"[service:{self.id}] Failed to start process.")
 
     def stop(self, timeout=2) -> None:
         """
@@ -119,28 +126,31 @@ class Service:
             - `INACTIVE` when the service is stopped successfully.
             - `ERROR` if stopping the service encounters an error.
         """
+        self.poll()
         if self._state == ServiceState.ERROR:
-            raise ServiceException(f"Service '{self.name}' is unavailable.")
+            raise ServiceException(f"[service:{self.id}] Service is unavailable.")
 
         if not self.is_running() or self._process is None:
-            logger.warning(f"Service '{self.name}' is not running.")
+            logger.warning(f"[service:{self.id}] Service is not running.")
             return
 
         self._set_state(ServiceState.STOPPING)
 
         try:
-            logger.info(f"Stopping service {self.id}:{self.name}")
+            logger.info(f"[service:{self.id}] Stopping service")
             self._process.terminate()
             self._process.wait(timeout)
         except subprocess.TimeoutExpired:
             logger.warning(
-                f"Timeout while stopping '{self.name}'. Forcing termination."
+                f"[service:{self.id}] Timeout while stopping process. Forcing termination."
             )
             self._process.kill()
             self._process.wait()
         except Exception as e:
-            logger.error(f"Failed to stop process: {e}")
-            raise ServiceException(f"Failed to stop service '{self.name}'.")
+            logger.error(f"[service:{self.id}] Failed to stop process: {e}")
+            raise ServiceException(
+                f"[service:{self.id}] Failed to stop service '{self.name}'."
+            )
 
         self._process = None
         self._set_state(ServiceState.INACTIVE)
@@ -156,7 +166,7 @@ class Service:
             - `RESTARTING` when the service is stopped successfully.
         """
         if self._state == ServiceState.ERROR:
-            raise ServiceException(f"Service '{self.name}' is unavailable.")
+            raise ServiceException(f"[service:{self.id}] Service is unavailable.")
 
         self._set_state(ServiceState.RESTARTING)
 
@@ -164,14 +174,16 @@ class Service:
             self.stop()
             self.start()
         except Exception as e:
-            logger.error(f"Failed to restart service: {e}")
-            raise ServiceException(f"Failed to restart service '{self.name}'.")
+            logger.error(f"[service:{self.id}] Failed to restart service: {e}")
+            raise ServiceException(
+                f"[service:{self.id}] Failed to restart service '{self.name}'."
+            )
 
     def is_running(self) -> bool:
         return self._state == ServiceState.ACTIVE
 
     def get_state(self) -> ServiceState:
-        self._poll()
+        self.poll()
         return self._state
 
     def get_returncode(self) -> Optional[int]:
@@ -185,7 +197,11 @@ class Service:
             return self._process.returncode
         return self._returncode
 
-    def _poll(self) -> None:
+    # TODO: check for the return code if the process has finished.
+    # If return code != 0, then change state to ERROR
+    # Although, this needs testing, as if we stop a rosnode, it would most
+    # likely have return code != 0
+    def poll(self) -> None:
         if self._state == ServiceState.ERROR:
             return
         if self._process is None or self._process.poll() is not None:
