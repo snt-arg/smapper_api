@@ -21,4 +21,4 @@ def get_sensor(
         if sensor.name == sensor_name:
             return sensor
 
-    raise HTTPException(404, detail=f"Sensor with name <{sensor_name}> does not exist")
+    raise HTTPException(404, detail=f"Sensor {sensor_name} not found")
