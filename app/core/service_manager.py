@@ -1,9 +1,10 @@
 import logging
 from app.core.services import Service
 from app.core.services.service import ServiceException, ServiceState
+from app.logger import logger
 
-
-logger = logging.getLogger("uvicorn")
+# TODO: Improve errors/exceptions
+# Have a thread polling all services in order to check their state.
 
 
 class ServiceManagerException(Exception):
