@@ -1,9 +1,10 @@
 from functools import lru_cache
 from typing import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from app.config.config import Configuration
 from app.core.service_manager import (
     ServiceManager,
+    ServiceManagerException,
 )
 from app.core.services.service import ServiceState
 from app.dependencies import get_configuration, get_service_manager
@@ -22,7 +23,11 @@ def get_sensor(
     id: str,
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
 ) -> ServiceState:
-    return manager.get_service_state(id)
+    try:
+        state = manager.get_service_state(id)
+    except ServiceManagerException:
+        raise HTTPException(404, detail=f"Service {id} not found.")
+    return state
 
 
 @router.post("/services/{id}/start", description="Start service with id")
