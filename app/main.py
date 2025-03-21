@@ -1,57 +1,60 @@
-from functools import lru_cache
 from contextlib import asynccontextmanager
-import logging
 from typing import Annotated
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import JSONResponse
 
-from app.routers import sensors
-from app.config.settings import APISettings
+from app.core.services.service import ServiceException
 from app.routers.v1 import sensors_router, bags_router, power_router, services_router
-from app.core.service_manager import get_service_manager
+from app.core.service_manager import ServiceManager, ServiceManagerException
 from app.config.config import Configuration, RosService, Service
+from app.dependencies import get_configuration, get_service_manager
+from app.config.api_config import *
+from app.logger import logger
 
-logger = logging.getLogger("unvicorn.error")
 
-# To fix issue with CORS when requesting on the browser
-origins = [
-    "http://localhost",
-    "http://localhost:8080",
-    "http://localhost:5173",
-]
+def setup_services(
+    service_manager: Annotated[ServiceManager, Depends(get_service_manager)],
+    config: Annotated[Configuration, Depends(get_configuration)],
+) -> None:
+    logger.info("Setting up services")
+    for service in config.services:
+        if isinstance(service, Service):
+            service_manager.add_service(service.id, service.name, cmd=service.cmd)
+        elif isinstance(service, RosService):
+            service_manager.add_service(service.id, service.name, cmd=service.exec)
+
+
+def stop_services(
+    service_manager: Annotated[ServiceManager, Depends(get_service_manager)],
+) -> None:
+    service_manager.stop_all()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    # read configuration
-    # setup services
-    # start services if autostart is true
-    manager = get_service_manager()
+async def lifespan(
+    app: FastAPI,
+):
+    # Executed on startup
+    service_manager = get_service_manager()
+    config = get_configuration()
 
-    logger.info("Loading configuration")
-    config = Configuration.load("app/config/device.yaml")
+    setup_services(service_manager, config)
 
-    for service in config.services:
-        if isinstance(service, Service):
-            manager.add_service(service.id, service.name, cmd=service.cmd)
-        elif isinstance(service, RosService):
-            manager.add_service(service.id, service.name, cmd=service.exec)
-
-    logger.info("Before Start FASTAPI")
     yield
-    logger.info("After End FASTAPI")
-
-
-@lru_cache
-def get_settings():
-    return APISettings()  # type: ignore
+    # Executed on shutdown
+    stop_services(service_manager)
 
 
 app = FastAPI(
-    debug=False,
+    title=TITLE,
+    summary=SUMMARY,
+    description=DESCRIPTION,
+    version=VERSION,
+    docs_url="/api/docs",
     lifespan=lifespan,
+    debug=True,
 )
 
 
@@ -59,6 +62,13 @@ app.include_router(sensors_router)
 app.include_router(services_router)
 app.include_router(bags_router)
 app.include_router(power_router)
+
+# INFO: CORS Middleware origins.
+# Needed due to frontend server running on different port
+origins = [
+    "http://localhost",
+    "http://localhost:5173",  # Frontend Vite server
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -69,8 +79,17 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-async def info(settings: Annotated[APISettings, Depends(get_settings)]):
-    return HTMLResponse(
-        f"<h1>API is up and running. Version of the API: {settings.version}</h1>"
+@app.exception_handler(ServiceManagerException)
+async def unicorn_exception_handler(request: Request, exc: ServiceManagerException):
+    return JSONResponse(
+        status_code=500,
+        content={"message": f"{exc}"},
+    )
+
+
+@app.exception_handler(ServiceException)
+async def unicorn_exception_handler(request: Request, exc: ServiceException):
+    return JSONResponse(
+        status_code=500,
+        content={"message": f"{exc}"},
     )
