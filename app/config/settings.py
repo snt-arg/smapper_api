@@ -1,13 +1,16 @@
 from pydantic import Field
 from typing import Tuple, Type
 
-# from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
     YamlConfigSettingsSource,
 )
+
+from app.schemas.sensors import Sensor
+from app.schemas.services import Service, RosService
+from app.schemas.onboard_pc import OnboardPC
 
 
 class APISettings(BaseSettings):
@@ -43,3 +46,32 @@ the /docs endpoint for the device documentation
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> Tuple[PydanticBaseSettingsSource, ...]:
         return (YamlConfigSettingsSource(settings_cls),)
+
+
+class DeviceSettings(BaseSettings):
+    services: list[Service | RosService] = Field(default=[])
+    sensors: list[Sensor] = Field(default=[])
+    onboard_pc: OnboardPC = Field(
+        default=OnboardPC(model="Jetson AGX Orin Development Kit")
+    )
+    revision: str = Field(default="1.0")
+    device_name: str = Field(default="smapper")
+    autostart_services: bool = Field(default=False)
+
+    model_config = SettingsConfigDict(yaml_file="config/device_config.yaml")
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: Type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+        return (YamlConfigSettingsSource(settings_cls),)
+
+
+class AppSettings(BaseSettings):
+    api: APISettings = APISettings()
+    device: DeviceSettings = DeviceSettings()

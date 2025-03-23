@@ -1,14 +1,24 @@
 from functools import lru_cache
-from app.config.config import Configuration, load_config
+
+from pydantic import ValidationError
+from app.config.settings import APISettings, AppSettings, DeviceSettings
 from app.core.service_manager import ServiceManager
 from app.logger import logger
 
 
 @lru_cache()
-def get_configuration() -> Configuration:
-    logger.debug("Get configuration dependency called")
-    config = load_config("config/device_config.yaml")
-    return config
+def get_app_settings() -> AppSettings:
+    return AppSettings()
+
+
+@lru_cache()
+def get_device_settings() -> DeviceSettings:
+    return get_app_settings().device
+
+
+@lru_cache()
+def get_api_settings() -> APISettings:
+    return get_app_settings().api
 
 
 @lru_cache()

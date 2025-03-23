@@ -1,20 +1,20 @@
 from functools import lru_cache
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
-from app.config.config import Configuration
+from app.config.settings import DeviceSettings
 from app.core.service_manager import (
     ServiceManager,
     ServiceManagerException,
 )
 from app.core.services.service import ServiceState
-from app.dependencies import get_configuration, get_service_manager
+from app.dependencies import get_device_settings, get_service_manager
 
 
 router = APIRouter(prefix="/api/v1")
 
 
 @router.get("/services", description="Get a list of available services")
-def get_sensors(config: Annotated[Configuration, Depends(get_configuration)]):
+def get_sensors(config: Annotated[DeviceSettings, Depends(get_device_settings)]):
     return config.services
 
 

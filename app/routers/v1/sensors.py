@@ -1,21 +1,21 @@
 from functools import lru_cache
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
-from app.config.config import Configuration
-from app.dependencies import get_configuration
+from app.config.settings import DeviceSettings
+from app.dependencies import get_device_settings
 
 
 router = APIRouter(prefix="/api/v1")
 
 
 @router.get("/sensors", description="Get a list of available sensors")
-def get_sensors(config: Annotated[Configuration, Depends(get_configuration)]):
+def get_sensors(config: Annotated[DeviceSettings, Depends(get_device_settings)]):
     return config.sensors
 
 
 @router.get("/sensors/{sensor_name}", description="Get metadata of given sensor")
 def get_sensor(
-    sensor_name: str, config: Annotated[Configuration, Depends(get_configuration)]
+    sensor_name: str, config: Annotated[DeviceSettings, Depends(get_device_settings)]
 ):
     for sensor in config.sensors:
         if sensor.name == sensor_name:

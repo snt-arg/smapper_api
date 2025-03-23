@@ -9,15 +9,19 @@ from fastapi.responses import JSONResponse
 from app.core.services.service import ServiceException
 from app.routers.v1 import sensors_router, bags_router, power_router, services_router
 from app.core.service_manager import ServiceManager, ServiceManagerException
-from app.config.config import Configuration, RosService, Service
-from app.dependencies import get_configuration, get_service_manager
+from app.dependencies import (
+    get_api_settings,
+    get_device_settings,
+    get_service_manager,
+)
 from app.logger import logger
-from app.config.settings import APISettings
+from app.config.settings import DeviceSettings
+from app.schemas.services import Service, RosService
 
 
 def setup_services(
     service_manager: Annotated[ServiceManager, Depends(get_service_manager)],
-    config: Annotated[Configuration, Depends(get_configuration)],
+    config: Annotated[DeviceSettings, Depends(get_device_settings)],
 ) -> None:
     logger.info("Setting up services")
     for service in config.services:
@@ -39,7 +43,7 @@ async def lifespan(
 ):
     # Executed on startup
     service_manager = get_service_manager()
-    config = get_configuration()
+    config = get_device_settings()
 
     setup_services(service_manager, config)
 
@@ -48,11 +52,9 @@ async def lifespan(
     stop_services(service_manager)
 
 
-try:
-    logger.info("Reading API settings from config file.")
-    api_settings = APISettings()
-except Exception as e:
-    logger.error(f"Failed to load API settings. Error: {e}")
+api_settings = get_api_settings()
+
+if api_settings is None:
     exit(1)
 
 
