@@ -4,17 +4,11 @@ import os
 import subprocess
 from typing import Optional, Callable
 from app.logger import logger
+from app.exceptions import ServiceException
 
 
 # TODO: add support for cwd argument
 # This allows a user to specify the cwd, without the need to include in the command cd ... &&
-
-
-# Custom Exception Classes
-class ServiceException(Exception):
-    """Exception raised when a service fails."""
-
-    pass
 
 
 class ServiceState(Enum):
@@ -55,6 +49,7 @@ class Service:
         self._returncode: Optional[int] = None
         self._state = ServiceState.INACTIVE
         self._on_state_change = on_state_change
+        self.stderr = ""
 
     def _set_state(self, new_state: ServiceState) -> None:
         if self._state != new_state:
@@ -81,7 +76,9 @@ class Service:
         self.poll()
 
         if self._state == ServiceState.ERROR:
-            raise ServiceException(f"[service:{self.id}] Service is unavailable.")
+            raise ServiceException(
+                self.id, "Service is Unavailable.", self._cmd, self.stderr
+            )
 
         self._set_state(ServiceState.STARTING)
 
@@ -95,6 +92,7 @@ class Service:
                 shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                text=True,
             )
             # Wait a short time to allow the process to initialize
             time.sleep(0.1)
@@ -103,16 +101,24 @@ class Service:
         except Exception as e:
             logger.error(f"[service:{self.id}] Failed to start process with error: {e}")
             self._set_state(ServiceState.ERROR)
+            if self._process:
+                _, self.stderr = self._process.communicate()
             raise ServiceException(
-                f"[service:{self.id}] Failed to start service '{self.name}'."
+                self.id, "Failed to create process for service", self._cmd, self.stderr
             )
 
         # Check if the process is running
         retcode = self._process.poll()
         if retcode is not None and retcode > 0:
             logger.error(f"[service:{self.id}] Failed to start process.")
+            _, self.stderr = self._process.communicate()
             self._set_state(ServiceState.ERROR)
-            raise ServiceException(f"[service:{self.id}] Failed to start process.")
+            raise ServiceException(
+                self.id,
+                "Failed to start process. Process exited with error.",
+                self._cmd,
+                self.stderr,
+            )
 
     def stop(self, timeout=2) -> None:
         """
@@ -127,8 +133,6 @@ class Service:
             - `ERROR` if stopping the service encounters an error.
         """
         self.poll()
-        if self._state == ServiceState.ERROR:
-            raise ServiceException(f"[service:{self.id}] Service is unavailable.")
 
         if not self.is_running() or self._process is None:
             logger.warning(f"[service:{self.id}] Service is not running.")
@@ -149,7 +153,10 @@ class Service:
         except Exception as e:
             logger.error(f"[service:{self.id}] Failed to stop process: {e}")
             raise ServiceException(
-                f"[service:{self.id}] Failed to stop service '{self.name}'."
+                self.id,
+                "Failed to stop service after sending SIGKILL",
+                self._cmd,
+                self.stderr,
             )
 
         self._process = None
@@ -166,7 +173,9 @@ class Service:
             - `RESTARTING` when the service is stopped successfully.
         """
         if self._state == ServiceState.ERROR:
-            raise ServiceException(f"[service:{self.id}] Service is unavailable.")
+            raise ServiceException(
+                self.id, "Service is Unavailable.", self._cmd, self.stderr
+            )
 
         self._set_state(ServiceState.RESTARTING)
 
@@ -176,7 +185,7 @@ class Service:
         except Exception as e:
             logger.error(f"[service:{self.id}] Failed to restart service: {e}")
             raise ServiceException(
-                f"[service:{self.id}] Failed to restart service '{self.name}'."
+                self.id, "Failed to restart service.", self._cmd, self.stderr
             )
 
     def is_running(self) -> bool:

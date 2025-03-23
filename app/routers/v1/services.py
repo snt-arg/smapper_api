@@ -8,7 +8,8 @@ from app.core.service_manager import (
 )
 from app.core.services.service import ServiceState
 from app.dependencies import get_device_settings, get_service_manager
-from app.schemas.services import RosServiceSchema, ServiceSchema
+from app.schemas.services import RosServiceSchema, ServiceSchema, ServiceStateSchema
+from app.exceptions import NotYetImplemented
 
 
 router = APIRouter(prefix="/api/v1")
@@ -26,36 +27,33 @@ def get_service_by_id(
     id: str,
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
 ) -> ServiceSchema:
-    raise HTTPException(404, detail=f"Service {id} not found.")
+    raise NotYetImplemented("Endpoint /services/{id} has not yet been implemented")
 
 
 @router.get("/services/{id}/state", description="Get current state of service with id")
 def get_service_state_by_id(
     id: str,
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
-) -> ServiceState:
-    try:
-        state = manager.get_service_state(id)
-    except ServiceManagerException:
-        raise HTTPException(404, detail=f"Service {id} not found.")
-    return state
+) -> ServiceStateSchema:
+    state = manager.get_service_state(id)
+    return ServiceStateSchema(state=state.name, value=state.value)
 
 
 @router.post("/services/{id}/start", description="Start service with id")
 def start_service_with_id(
     id: str,
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
-) -> ServiceSchema:
+):
     manager.start_service(id)
     # TODO: return service state once it is implemented in service_manager
-    return
+    return {}
 
 
 @router.post("/services/{id}/stop", description="Stop service with id")
 def stop_service_with_id(
     id: str,
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
-) -> ServiceSchema:
+):
     manager.stop_service(id)
     # TODO: return service state once it is implemented in service_manager
-    return
+    return {}

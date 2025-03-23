@@ -17,6 +17,7 @@ from app.dependencies import (
 from app.logger import logger
 from app.config.settings import DeviceSettings
 from app.schemas import ServiceSchema, RosServiceSchema
+from app.exceptions import init_exception_handlers
 
 
 def setup_services(
@@ -85,20 +86,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.exception_handler(ServiceManagerException)
-async def service_manager_exception_handler(
-    request: Request, exc: ServiceManagerException
-):
-    return JSONResponse(
-        status_code=500,
-        content={"message": f"{exc}"},
-    )
-
-
-@app.exception_handler(ServiceException)
-async def service_exception_handler(request: Request, exc: ServiceException):
-    return JSONResponse(
-        status_code=500,
-        content={"message": f"{exc}"},
-    )
+init_exception_handlers(app)

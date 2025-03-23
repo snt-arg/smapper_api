@@ -1,14 +1,11 @@
 import logging
 from app.core.services import Service
 from app.core.services.service import ServiceException, ServiceState
+from app.exceptions import ServiceManagerException
 from app.logger import logger
 
 # TODO: Improve errors/exceptions
 # Have a thread polling all services in order to check their state.
-
-
-class ServiceManagerException(Exception):
-    pass
 
 
 class ServiceManager:
