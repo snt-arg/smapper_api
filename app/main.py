@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from logging import log
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Request
@@ -10,8 +11,8 @@ from app.routers.v1 import sensors_router, bags_router, power_router, services_r
 from app.core.service_manager import ServiceManager, ServiceManagerException
 from app.config.config import Configuration, RosService, Service
 from app.dependencies import get_configuration, get_service_manager
-from app.config.api_config import *
 from app.logger import logger
+from app.config.settings import APISettings
 
 
 def setup_services(
@@ -47,14 +48,23 @@ async def lifespan(
     stop_services(service_manager)
 
 
+try:
+    logger.info("Reading API settings from config file.")
+    api_settings = APISettings()
+except Exception as e:
+    logger.error(f"Failed to load API settings. Error: {e}")
+    exit(1)
+
+
 app = FastAPI(
-    title=TITLE,
-    summary=SUMMARY,
-    description=DESCRIPTION,
-    version=VERSION,
-    docs_url="/api/docs",
+    title=api_settings.title,
+    summary=api_settings.summary,
+    description=api_settings.description,
+    version=api_settings.version,
+    docs_url=api_settings.docs_url,
+    openapi_url=api_settings.openapi_url,
+    debug=api_settings.debug,
     lifespan=lifespan,
-    debug=True,
 )
 
 
@@ -64,15 +74,10 @@ app.include_router(bags_router)
 app.include_router(power_router)
 
 # INFO: CORS Middleware origins.
-# Needed due to frontend server running on different port
-origins = [
-    "http://localhost",
-    "http://localhost:5173",  # Frontend Vite server
-]
-
+# Needed if frontend server is running on different port for instance.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=api_settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -80,7 +85,9 @@ app.add_middleware(
 
 
 @app.exception_handler(ServiceManagerException)
-async def unicorn_exception_handler(request: Request, exc: ServiceManagerException):
+async def service_manager_exception_handler(
+    request: Request, exc: ServiceManagerException
+):
     return JSONResponse(
         status_code=500,
         content={"message": f"{exc}"},
@@ -88,7 +95,7 @@ async def unicorn_exception_handler(request: Request, exc: ServiceManagerExcepti
 
 
 @app.exception_handler(ServiceException)
-async def unicorn_exception_handler(request: Request, exc: ServiceException):
+async def service_exception_handler(request: Request, exc: ServiceException):
     return JSONResponse(
         status_code=500,
         content={"message": f"{exc}"},
