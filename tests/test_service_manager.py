@@ -1,8 +1,9 @@
 import time
 import unittest
 from unittest.mock import patch
-from app.core.services import Service, ServiceState, ServiceException
-from app.core.service_manager import ServiceManager, ServiceManagerException
+from app.core.services import ServiceState
+from app.core.service_manager import ServiceManager
+from app.exceptions import ServiceException, ServiceManagerException
 
 
 class TestServiceManager(unittest.TestCase):
@@ -108,7 +109,7 @@ class TestServiceManager(unittest.TestCase):
 
     @patch(
         "app.core.services.Service.start",
-        side_effect=ServiceException("Failed to start"),
+        side_effect=ServiceException("dummy_id", "Failed to start", "no cmd", ""),
     )
     def test_start_service_failure(self, mock_start):
         """Test handling failure when starting a service"""
@@ -118,7 +119,8 @@ class TestServiceManager(unittest.TestCase):
         self.manager.remove_all_services()
 
     @patch(
-        "app.core.services.Service.stop", side_effect=ServiceException("Failed to stop")
+        "app.core.services.Service.stop",
+        side_effect=ServiceException("dummy_id", "Failed to stop", "no cmd", ""),
     )
     def test_stop_service_failure(self, mock_stop):
         """Test handling failure when stopping a service"""

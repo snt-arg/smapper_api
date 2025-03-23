@@ -1,8 +1,7 @@
-import time
 import unittest
 
 from app.core.services import Service, ServiceState
-from app.core.services.service import ServiceException
+from app.exceptions import ServiceException
 
 
 class TestService(unittest.TestCase):
