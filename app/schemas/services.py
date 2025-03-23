@@ -2,6 +2,11 @@ from pydantic import BaseModel
 from typing import Optional, List
 
 
+class ServiceStateSchema(BaseModel):
+    state: str
+    value: int
+
+
 class ServiceSchema(BaseModel):
     name: str
     id: str
