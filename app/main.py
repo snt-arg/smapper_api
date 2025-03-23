@@ -16,7 +16,7 @@ from app.dependencies import (
 )
 from app.logger import logger
 from app.config.settings import DeviceSettings
-from app.schemas.services import Service, RosService
+from app.schemas import ServiceSchema, RosServiceSchema
 
 
 def setup_services(
@@ -25,9 +25,9 @@ def setup_services(
 ) -> None:
     logger.info("Setting up services")
     for service in config.services:
-        if isinstance(service, Service):
+        if isinstance(service, ServiceSchema):
             service_manager.add_service(service.id, service.name, cmd=service.cmd)
-        elif isinstance(service, RosService):
+        elif isinstance(service, RosServiceSchema):
             service_manager.add_service(service.id, service.name, cmd=service.exec)
 
 

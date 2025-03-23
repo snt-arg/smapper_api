@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 
 
-class Service(BaseModel):
+class ServiceSchema(BaseModel):
     name: str
     id: str
     type: str
@@ -10,7 +10,7 @@ class Service(BaseModel):
     env: Optional[List[str]] = None
 
 
-class RosService(BaseModel):
+class RosServiceSchema(BaseModel):
     name: str
     id: str
     type: str

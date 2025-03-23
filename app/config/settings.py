@@ -8,9 +8,7 @@ from pydantic_settings import (
     YamlConfigSettingsSource,
 )
 
-from app.schemas.sensors import Sensor
-from app.schemas.services import Service, RosService
-from app.schemas.onboard_pc import OnboardPC
+from app.schemas import ServiceSchema, RosServiceSchema, SensorSchema, OnboardPCSchema
 
 
 class APISettings(BaseSettings):
@@ -49,10 +47,10 @@ the /docs endpoint for the device documentation
 
 
 class DeviceSettings(BaseSettings):
-    services: list[Service | RosService] = Field(default=[])
-    sensors: list[Sensor] = Field(default=[])
-    onboard_pc: OnboardPC = Field(
-        default=OnboardPC(model="Jetson AGX Orin Development Kit")
+    services: list[ServiceSchema | RosServiceSchema] = Field(default=[])
+    sensors: list[SensorSchema] = Field(default=[])
+    onboard_pc: OnboardPCSchema = Field(
+        default=OnboardPCSchema(model="Jetson AGX Orin Development Kit")
     )
     revision: str = Field(default="1.0")
     device_name: str = Field(default="smapper")

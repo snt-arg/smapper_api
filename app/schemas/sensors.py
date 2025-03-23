@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class Sensor(BaseModel):
+class SensorSchema(BaseModel):
     name: str
     model: str
     type: str

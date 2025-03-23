@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 
-class OnboardPC(BaseModel):
+class OnboardPCSchema(BaseModel):
     model: str
