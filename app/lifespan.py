@@ -18,10 +18,7 @@ def init_services(
 ) -> None:
     logger.info("Setting up services")
     for service in config.services:
-        if isinstance(service, ServiceSchema):
-            service_manager.add_service(service.id, service.name, cmd=service.cmd)
-        elif isinstance(service, RosServiceSchema):
-            service_manager.add_service(service.id, service.name, cmd=service.exec)
+        service_manager.add_service(service)
 
 
 def terminate_services(

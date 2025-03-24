@@ -1,4 +1,5 @@
 from enum import Enum
+import logging
 import time
 import os
 import subprocess
@@ -27,8 +28,10 @@ class Service:
         self,
         name: str,
         id: str,
+        srv_type: str,
         cmd: str,
         env: Optional[dict[str, str]] = None,
+        cwd: Optional[str] = None,
         on_state_change: Optional[Callable[[ServiceState], None]] = None,
     ) -> None:
         """
@@ -45,6 +48,7 @@ class Service:
         self.id = id
         self._cmd = cmd
         self._env = env or {}
+        self._cwd = cwd or os.path.curdir
         self._process: Optional[subprocess.Popen] = None
         self._returncode: Optional[int] = None
         self._state = ServiceState.INACTIVE
@@ -89,6 +93,7 @@ class Service:
             self._process = subprocess.Popen(
                 self._cmd,
                 env=full_env,
+                cwd=self._cwd,
                 shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,

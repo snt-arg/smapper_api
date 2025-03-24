@@ -8,26 +8,27 @@ class RosService(Service):
         self,
         name: str,
         id: str,
-        distro: str,
+        srv_type: str,
+        ros_distro: str,
         exec_type: str,
         ws: str,
         pkg_name: str,
-        executable: str,
+        exec: str,
         env: dict[str, str] | None = None,
     ) -> None:
-        super().__init__(name, id, "", env)
+        super().__init__(name, id, srv_type, "", env)
 
         if not os.path.exists(ws):
             logger.error(f"Workspace {ws} does not exist. Service will be unavailable")
             self._state = ServiceState.ERROR
 
-        if not self.__is_ros_available(distro):
+        if not self.__is_ros_available(ros_distro):
             logger.error(
                 "Ros does not seem to be installed. Service will be unavailable."
             )
             self._state = ServiceState.ERROR
 
-        self._cmd = self.__build_cmd(distro, exec_type, pkg_name, executable)
+        self._cmd = self.__build_cmd(ros_distro, exec_type, pkg_name, exec)
 
     def __is_ros_available(self, distro: str) -> bool:
         return os.path.exists(f"/opt/ros/{distro}")

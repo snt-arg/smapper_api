@@ -24,7 +24,7 @@ sensors:
 services:
     - name: OusterROS
       id: lidar_service
-      type: "ROS_SERVICE"
+      srv_type: "ROS_SERVICE"
       exec_type: "LAUNCH"
       ros_distro: humble
       ws: "$HOME/smapper/software/ros_ws"
@@ -35,7 +35,7 @@ services:
 
     - name: Argus Cameras
       id: argus_cam_service
-      type: "ROS_SERVICE"
+      srv_type: "ROS_SERVICE"
       exec_type: "LAUNCH"
       ros_distro: humble
       ws: "$HOME/smapper/software/ros_ws"
@@ -46,12 +46,13 @@ services:
 
     - name: Device Documentation
       id: dev_docs
-      type: "SERVICE"
-      cmd: "cd /home/pedros/rosbox_shared/smapper/ && docker run --rm -it -p 8080:8000 -v ${PWD}:/docs squidfunk/mkdocs-material"
+      srv_type: "SERVICE"
+      cwd: "/home/pedros/rosbox_shared/smapper/"
+      cmd: "docker run --rm -it -p 8080:8000 -v ${PWD}:/docs squidfunk/mkdocs-material"
 
     # - name: Realsense Camera
     #   id: realsense_service
-    #   type: "ROS_SERVICE"
+    #   srv_type: "ROS_SERVICE"
     #   exec_type: "LAUNCH"
     #   ros_distro: humble
     #   ws: "$HOME/smapper/software/ros_ws"
