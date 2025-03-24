@@ -10,8 +10,7 @@ class RosbagService(Service):
     ) -> None:
         self.topics = " ".join(topics_to_record) if topics_to_record else "-a"
         self.output = os.path.join(output_dir, name)
-        # cmd = f"ros2 bag record -o {self.output} {self.topics}"
-        cmd = f"robag record -o {self.output} {self.topics}"
+        cmd = f"ros2 bag record -o {self.output} {self.topics}"
         super().__init__(
             name="Rosbag Service",
             id="rosbag_service",
