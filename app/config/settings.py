@@ -55,6 +55,7 @@ class DeviceSettings(BaseSettings):
     revision: str = Field(default="1.0")
     device_name: str = Field(default="smapper")
     autostart_services: bool = Field(default=False)
+    bags_storage_path: str = Field(default="")
 
     model_config = SettingsConfigDict(yaml_file="config/device_config.yaml")
 

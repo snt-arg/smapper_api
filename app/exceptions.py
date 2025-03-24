@@ -31,6 +31,13 @@ class ServiceManagerException(Exception):
         super().__init__(detail)
 
 
+class BagNotFoundException(Exception):
+    def __init__(self, bag_id):
+        self.bag_id = bag_id
+        self.detail = f"Bag with id {bag_id} not found."
+        super().__init__(self.detail)
+
+
 def init_exception_handlers(app: FastAPI):
     @app.exception_handler(NotYetImplementedException)
     async def not_yet_implemented_exception_handler(

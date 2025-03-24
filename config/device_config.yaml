@@ -1,6 +1,7 @@
 device_name: SMapper
 revision: "2.1"
 autostart_services: false
+bags_storage_path: "/home/pedros/rosbox_shared/BagStorage/"
 
 onboard_pc:
     model: Jetson AGX Orin Development Kit
