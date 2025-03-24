@@ -1,4 +1,7 @@
 import logging
+import threading
+import time
+
 from app.core.services import Service
 from app.core.services.service import ServiceException, ServiceState
 from app.exceptions import ServiceManagerException
@@ -11,11 +14,24 @@ from app.logger import logger
 class ServiceManager:
     def __init__(self):
         self.services: dict[str, Service] = {}
-        self._logger = logger
+        self._poll_thread = threading.Thread(
+            target=self._poll_services_cb,
+            name="service_manager_polling_thread",
+            daemon=True,
+        )
+
+        self._poll_thread.start()
+
+    def _poll_services_cb(self):
+        while True:
+            logger.debug("Polling services...")
+            for _, service in self.services.items():
+                service.poll()
+            time.sleep(1)
 
     def add_service(self, id: str, name: str, cmd: str) -> bool:
         if self.services.get(id):
-            self._logger.error(f"A Service with id: {id} already exists")
+            logger.error(f"A Service with id: {id} already exists")
             return False
         self.services[id] = Service(name, id, cmd)
 
@@ -23,7 +39,7 @@ class ServiceManager:
 
     def remove_service(self, id) -> bool:
         if self.services.get(id):
-            self._logger.error(f"A Service with id: {id} does not exist")
+            logger.error(f"A Service with id: {id} does not exist")
             return False
         self.stop_service(id)
         self.services.pop(id)
@@ -46,14 +62,14 @@ class ServiceManager:
             try:
                 service.stop()
             except ServiceException as e:
-                self._logger.error(f"Failed to start service {id} with error: {e}")
+                logger.error(f"Failed to start service {id} with error: {e}")
 
     def restart_all(self) -> None:
         for id, service in self.services.items():
             try:
                 service.restart()
             except ServiceException as e:
-                self._logger.error(f"Failed to start service {id} with error: {e}")
+                logger.error(f"Failed to start service {id} with error: {e}")
 
     def start_service(self, id: str) -> None:
         service = self.__get_service_by_id(id)
@@ -80,7 +96,7 @@ class ServiceManager:
     def __get_service_by_id(self, id) -> Service:
         service = self.services.get(id)
         if service is None:
-            self._logger.error(
+            logger.error(
                 f"Service with id {id} does not yet exist. It must be created first."
             )
             raise ServiceManagerException(

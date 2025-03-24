@@ -206,14 +206,15 @@ class Service:
             return self._process.returncode
         return self._returncode
 
-    # TODO: check for the return code if the process has finished.
-    # If return code != 0, then change state to ERROR
-    # Although, this needs testing, as if we stop a rosnode, it would most
-    # likely have return code != 0
+    # TODO: Check what is the retcode when stopping a ros node
     def poll(self) -> None:
         if self._state == ServiceState.ERROR:
             return
-        if self._process is None or self._process.poll() is not None:
+        if self._process is None:
             self._set_state(ServiceState.INACTIVE)
+        elif self._process.poll() is not None:
+            ret_code = self.get_returncode()
+            if ret_code != 0:
+                self._set_state(ServiceState.ERROR)
         else:
             self._set_state(ServiceState.ACTIVE)
