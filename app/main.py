@@ -1,63 +1,13 @@
-from contextlib import asynccontextmanager
-from logging import log
-from typing import Annotated
-
-from fastapi import Depends, FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
-from app.core.services.service import ServiceException
-from app.routers.v1 import sensors_router, bags_router, power_router, services_router
-from app.core.service_manager import ServiceManager, ServiceManagerException
-from app.dependencies import (
-    get_api_settings,
-    get_device_settings,
-    get_service_manager,
-)
-from app.logger import logger
-from app.config.settings import DeviceSettings
-from app.schemas import ServiceSchema, RosServiceSchema
+from app.lifespan import lifespan
+from app.dependencies import get_api_settings
 from app.exceptions import init_exception_handlers
+from app.routers.v1 import sensors_router, bags_router, power_router, services_router
 
-
-def setup_services(
-    service_manager: Annotated[ServiceManager, Depends(get_service_manager)],
-    config: Annotated[DeviceSettings, Depends(get_device_settings)],
-) -> None:
-    logger.info("Setting up services")
-    for service in config.services:
-        if isinstance(service, ServiceSchema):
-            service_manager.add_service(service.id, service.name, cmd=service.cmd)
-        elif isinstance(service, RosServiceSchema):
-            service_manager.add_service(service.id, service.name, cmd=service.exec)
-
-
-def stop_services(
-    service_manager: Annotated[ServiceManager, Depends(get_service_manager)],
-) -> None:
-    service_manager.stop_all()
-
-
-@asynccontextmanager
-async def lifespan(
-    app: FastAPI,
-):
-    # Executed on startup
-    service_manager = get_service_manager()
-    config = get_device_settings()
-
-    setup_services(service_manager, config)
-
-    yield
-    # Executed on shutdown
-    stop_services(service_manager)
-
-
+# Get settings loded from configuration file
 api_settings = get_api_settings()
-
-if api_settings is None:
-    exit(1)
-
 
 app = FastAPI(
     title=api_settings.title,
@@ -71,13 +21,13 @@ app = FastAPI(
 )
 
 
+# Add API routers
 app.include_router(sensors_router)
 app.include_router(services_router)
 app.include_router(bags_router)
 app.include_router(power_router)
 
-# INFO: CORS Middleware origins.
-# Needed if frontend server is running on different port for instance.
+# Setup CORS Middleware.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=api_settings.allowed_origins,
