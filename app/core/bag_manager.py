@@ -1,22 +1,68 @@
+import time
+import datetime
 import os
+import base62
+import uuid
 import yaml
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-from app.schemas.bags import BagSchema, MinimalRosbagMetadata
+from app.core.services.rosbag_service import RosbagService
+from app.core.services.service import Service
+from app.schemas.bags import (
+    BagCreationResponse,
+    BagSchema,
+    MinimalRosbagMetadata,
+    BagRecordingRequestSchema,
+    RosbagMetadata,
+)
 from app.schemas.ros import TopicSchema
-from app.exceptions import BagNotFoundException, NotYetImplementedException
+from app.exceptions import (
+    BagNotFoundException,
+    BagRecordingOnGoingException,
+    NotYetImplementedException,
+)
 from app.logger import logger
 
 
 class BagManager:
     bags: Dict[str, BagSchema] = {}
     storage_path: str
+    rosbag_service: Optional[Service] = None
+    recording_bag_metadata: Optional[RosbagMetadata] = None
 
     def __init__(self, storage_path: str):
         assert os.path.exists(storage_path), "Storage path does not exist"
         self.storage_path = storage_path
 
-        self._read_bags_storage()
+        self.__read_bags_storage()
+
+    def create_bag(self, request: BagRecordingRequestSchema) -> BagCreationResponse:
+        if self.rosbag_service and self.rosbag_service.is_running():
+            raise BagRecordingOnGoingException()
+
+        bag_id = self.__generate_bag_id()
+        bag_name = self.__generate_bag_name(bag_id, request.name)
+
+        self.rosbag_service = RosbagService(self.storage_path, bag_name, request.topics)
+        self.rosbag_service.start()
+
+        self.rosbag_service.poll()
+        if not self.rosbag_service.is_running():
+            raise Exception("Failed to start rosbag record")
+
+        self.recording_bag_metadata = RosbagMetadata(id=bag_id, **request.model_dump())
+
+        return BagCreationResponse(
+            bag_id=bag_id, service_state=self.rosbag_service.get_state().name
+        )
+
+    def stop_bag_recording(self) -> BagSchema:
+        if not self.rosbag_service or not self.rosbag_service.is_running():
+            raise Exception("No active recording to stop")
+        self.rosbag_service.stop()
+
+        # TODO: save metadata into a file inside bag dir
+        raise NotYetImplementedException()
 
     def get_bags(self) -> List[BagSchema]:
         return [bag for _, bag in self.bags.items()]
@@ -56,7 +102,7 @@ class BagManager:
             db_path=os.path.join(path, metadata["relative_file_paths"][0]),
         )
 
-    def _read_bags_storage(self) -> None:
+    def __read_bags_storage(self) -> None:
         for bag_name in os.listdir(self.storage_path):
             rosbag_metadata = self._read_rosbag_metadata(
                 self._build_rosbag_path(bag_name)
@@ -76,3 +122,10 @@ class BagManager:
             )
 
             self.bags[id] = bag
+
+    def __generate_bag_id(self) -> str:
+        return base62.encode(uuid.uuid4().int >> 64)
+
+    def __generate_bag_name(self, id: str, name: str, include_date: bool = True) -> str:
+        date = datetime.datetime.now().strftime("%Y.%m.%d")
+        return id + "_" + name + "_" + date if include_date else ""

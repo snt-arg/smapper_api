@@ -1,9 +1,10 @@
+from os import stat
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
 from app.core.bag_manager import BagManager
 from app.dependencies import get_bag_manager
-from app.exceptions import BagNotFoundException, NotYetImplementedException
-from app.schemas import BagSchema
+from app.exceptions import BagNotFoundException
+from app.schemas import BagSchema, BagRecordingRequestSchema, BagCreationResponse
 
 
 router = APIRouter(prefix="/api/v1")
@@ -26,3 +27,23 @@ def get_bag_by_id(
         raise HTTPException(404, e.detail)
 
     return bag
+
+
+@router.post("/bags/record/start")
+def create_bag(
+    request: BagRecordingRequestSchema,
+    bag_manager: Annotated[BagManager, Depends(get_bag_manager)],
+) -> BagCreationResponse:
+    return bag_manager.create_bag(request)
+
+
+@router.post("/bags/record/stop")
+def stop_bag_recording(
+    bag_manager: Annotated[BagManager, Depends(get_bag_manager)],
+) -> BagSchema:
+    try:
+        bag_schema = bag_manager.stop_bag_recording()
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"{e}")
+
+    return bag_schema

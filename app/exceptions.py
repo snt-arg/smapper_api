@@ -38,6 +38,15 @@ class BagNotFoundException(Exception):
         super().__init__(self.detail)
 
 
+class BagRecordingOnGoingException(Exception):
+    def __init__(
+        self,
+        detail="There exists already an ongoing recording session. You must stop it first.",
+    ):
+        self.detail = detail
+        super().__init__(self.detail)
+
+
 def init_exception_handlers(app: FastAPI):
     @app.exception_handler(NotYetImplementedException)
     async def not_yet_implemented_exception_handler(

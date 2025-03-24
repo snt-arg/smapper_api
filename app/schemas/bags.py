@@ -12,6 +12,11 @@ class MinimalRosbagMetadata(BaseModel):
     db_path: str
 
 
+class BagCreationResponse(BaseModel):
+    bag_id: str
+    service_state: str
+
+
 class BagSchema(BaseModel):
     id: str
     name: str
@@ -19,3 +24,14 @@ class BagSchema(BaseModel):
     rosbag_metadata: MinimalRosbagMetadata
     detail: Optional[str] = ""
     tags: Optional[List[str]] = []
+
+
+class BagRecordingRequestSchema(BaseModel):
+    name: str
+    topics: Optional[List[str]]
+    detail: str
+    tags: Optional[List[str]]
+
+
+class RosbagMetadata(BagRecordingRequestSchema):
+    id: str
