@@ -9,7 +9,7 @@ from app.core.service_manager import (
 from app.core.services.service import ServiceState
 from app.dependencies import get_device_settings, get_service_manager
 from app.schemas.services import RosServiceSchema, ServiceSchema, ServiceStateSchema
-from app.exceptions import NotYetImplemented
+from app.exceptions import NotYetImplementedException
 
 
 router = APIRouter(prefix="/api/v1")
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/v1")
 
 @router.get("/services", description="Get a list of available services")
 def get_services(
-    config: Annotated[DeviceSettings, Depends(get_device_settings)]
+    config: Annotated[DeviceSettings, Depends(get_device_settings)],
 ) -> List[ServiceSchema | RosServiceSchema]:
     return config.services
 
@@ -27,7 +27,9 @@ def get_service_by_id(
     id: str,
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
 ) -> ServiceSchema:
-    raise NotYetImplemented("Endpoint /services/{id} has not yet been implemented")
+    raise NotYetImplementedException(
+        "Endpoint /services/{id} has not yet been implemented"
+    )
 
 
 @router.get("/services/{id}/state", description="Get current state of service with id")
