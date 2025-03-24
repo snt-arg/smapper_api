@@ -1,15 +1,10 @@
 from enum import Enum
-import logging
 import time
 import os
 import subprocess
 from typing import Optional, Callable
 from app.logger import logger
 from app.exceptions import ServiceException
-
-
-# TODO: add support for cwd argument
-# This allows a user to specify the cwd, without the need to include in the command cd ... &&
 
 
 class ServiceState(Enum):
@@ -218,8 +213,8 @@ class Service:
         if self._process is None:
             self._set_state(ServiceState.INACTIVE)
         elif self._process.poll() is not None:
-            ret_code = self.get_returncode()
-            if ret_code != 0:
+            self._returncode = self.get_returncode()
+            if self._returncode != 0:
                 self._set_state(ServiceState.ERROR)
         else:
             self._set_state(ServiceState.ACTIVE)
