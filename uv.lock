@@ -440,6 +440,14 @@ wheels = [
 ]
 
 [[package]]
+name = "pybase62"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/11/07/8fe498201daece90af1725cf48d5de9d1a87ea8d457df52c986ef926ff33/pybase62-1.0.0-py3-none-any.whl", hash = "sha256:60539ad956ec9e9de091bc7ae88c9550bc2fa17f503050cf34d021b75e73cb27", size = 4913 },
+]
+
+[[package]]
 name = "pydantic"
 version = "2.9.2"
 source = { registry = "https://pypi.org/simple" }
@@ -667,6 +675,7 @@ dependencies = [
     { name = "coloredlogs" },
     { name = "colorlog" },
     { name = "fastapi", extra = ["standard"] },
+    { name = "pybase62" },
     { name = "pydantic-settings" },
     { name = "pytest" },
     { name = "python-dotenv" },
@@ -678,6 +687,7 @@ requires-dist = [
     { name = "coloredlogs", specifier = ">=15.0.1" },
     { name = "colorlog", specifier = ">=6.9.0" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115.2" },
+    { name = "pybase62", specifier = ">=1.0.0" },
     { name = "pydantic-settings", specifier = ">=2.6.0" },
     { name = "pytest", specifier = ">=8.3.3" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
