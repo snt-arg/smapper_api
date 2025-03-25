@@ -27,9 +27,7 @@ def get_service_by_id(
     id: str,
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
 ) -> ServiceSchema:
-    raise NotYetImplementedException(
-        "Endpoint /services/{id} has not yet been implemented"
-    )
+    return manager.get_service_by_id(id)
 
 
 @router.get("/services/{id}/state", description="Get current state of service with id")
@@ -45,10 +43,10 @@ def get_service_state_by_id(
 def start_service_with_id(
     id: str,
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
-):
+) -> ServiceStateSchema:
     manager.start_service(id)
-    # TODO: return service state once it is implemented in service_manager
-    return {}
+    state = manager.get_service_state(id)
+    return ServiceStateSchema(state=state.name, value=state.value)
 
 
 @router.post("/services/{id}/stop", description="Stop service with id")
@@ -57,5 +55,5 @@ def stop_service_with_id(
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
 ):
     manager.stop_service(id)
-    # TODO: return service state once it is implemented in service_manager
-    return {}
+    state = manager.get_service_state(id)
+    return ServiceStateSchema(state=state.name, value=state.value)

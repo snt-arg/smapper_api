@@ -1,3 +1,4 @@
+from typing import Dict, Optional
 from .service import ServiceState, Service
 import os
 from app.logger import logger
@@ -14,7 +15,7 @@ class RosService(Service):
         ws: str,
         pkg_name: str,
         exec: str,
-        env: dict[str, str] | None = None,
+        env: Optional[Dict[str, str]] = None,
     ) -> None:
         super().__init__(name, id, srv_type, "", env)
 

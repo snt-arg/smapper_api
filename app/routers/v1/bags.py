@@ -1,4 +1,3 @@
-from os import stat
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
 from app.core.bag_manager import BagManager

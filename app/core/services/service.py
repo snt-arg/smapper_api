@@ -2,9 +2,10 @@ from enum import Enum
 import time
 import os
 import subprocess
-from typing import Optional, Callable
+from typing import Dict, Optional, Callable
 from app.logger import logger
 from app.exceptions import ServiceException
+from app.schemas.services import ServiceSchema
 
 
 class ServiceState(Enum):
@@ -25,7 +26,7 @@ class Service:
         id: str,
         srv_type: str,
         cmd: str,
-        env: Optional[dict[str, str]] = None,
+        env: Optional[Dict[str, str]] = None,
         cwd: Optional[str] = None,
         on_state_change: Optional[Callable[[ServiceState], None]] = None,
     ) -> None:
@@ -41,6 +42,7 @@ class Service:
         """
         self.name = name
         self.id = id
+        self.srv_type = srv_type
         self._cmd = cmd
         self._env = env or {}
         self._cwd = cwd or os.path.curdir
@@ -218,3 +220,13 @@ class Service:
                 self._set_state(ServiceState.ERROR)
         else:
             self._set_state(ServiceState.ACTIVE)
+
+    def get_schema(self) -> ServiceSchema:
+        return ServiceSchema(
+            name=self.name,
+            id=self.id,
+            srv_type=self.srv_type,
+            cmd=self._cmd,
+            cwd=self._cwd,
+            env=self._env,
+        )

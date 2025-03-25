@@ -89,6 +89,9 @@ class ServiceManager:
         service = self.__get_service_by_id(id)
         service.restart()
 
+    def get_service_by_id(self, id: str) -> ServiceSchema:
+        return self.__get_service_by_id(id).get_schema()
+
     def get_service_state(self, id: str) -> ServiceState:
         service = self.__get_service_by_id(id)
         return service.get_state()
