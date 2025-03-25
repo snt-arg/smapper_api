@@ -1,23 +1,26 @@
-"""Unit Test for REST API endpoints
-Checks whether the endpoints are active.
-"""
+import unittest
 
-import requests
-
-API_VERSION = "v1"
-API_URL = f"http://127.0.0.1:8000/api/{API_VERSION}"
+from fastapi.testclient import TestClient
+from app.main import app
 
 
-# def test_bms_endpoint():
-#     res = requests.get(API_URL + "/sensor/bms")
-#     assert res.status_code == 200
-#
-#
-# def test_lidar_endpoint():
-#     res = requests.get(API_URL + "/sensor/lidar")
-#     assert res.status_code == 200
-#
-#
-# def test_cameras_endpoint():
-#     res = requests.get(API_URL + "/sensor/cameras")
-#     assert res.status_code == 200
+class TestAPIEndpoints(unittest.TestCase):
+    api_version = "v1"
+    api_url = f"http://127.0.0.1:8000/api/{api_version}"
+
+    def setUp(self) -> None:
+        self.client = TestClient(app, self.api_url)
+
+    def test_get_sensors(self):
+        resp = self.client.get("/sensors")
+
+        self.assertEqual(resp.status_code, 200)
+
+    def test_get_services(self):
+        resp = self.client.get("/services")
+
+        self.assertEqual(resp.status_code, 200)
+
+    def test_get_bags(self):
+        resp = self.client.get("/bags")
+        self.assertEqual(resp.status_code, 200)
