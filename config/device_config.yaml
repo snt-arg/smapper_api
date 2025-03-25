@@ -32,7 +32,7 @@ services:
       pkg_name: "smapper_bringup"
       exec: "lidar.launch.py"
       env:
-          - RMW_IMPLEMENTATION:rmw_cyclonedds_cpp
+          RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
 
     - name: Argus Cameras
       id: argus_cam_service
@@ -43,7 +43,7 @@ services:
       pkg_name: "smapper_bringup"
       exec: "argus_cameras.launch.py"
       env:
-          - RMW_IMPLEMENTATION:rmw_cyclonedds_cpp
+          RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
 
     - name: Device Documentation
       id: dev_docs
@@ -60,4 +60,4 @@ services:
     #   pkg_name: "smapper_bringup"
     #   exec: "realsense.launch.py"
     #   env:
-    #       - RMW_IMPLEMENTATION:rmw_cyclonedds_cpp
+    #      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
