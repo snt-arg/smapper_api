@@ -18,14 +18,16 @@ class ServiceManager:
             name="service_manager_polling_thread",
             daemon=True,
         )
-
+        self.lock = threading.Lock()
         self._poll_thread.start()
 
     def _poll_services_cb(self):
         while True:
             logger.debug("Polling services...")
             for _, service in self.services.items():
+                self.lock.acquire()
                 service.poll()
+                self.lock.release()
             time.sleep(1)
 
     def add_service(self, service: ServiceSchema | RosServiceSchema) -> bool:
