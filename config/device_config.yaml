@@ -46,7 +46,7 @@ services:
     - name: Device Documentation
       id: dev_docs
       cwd: "/home/pedros/rosbox_shared/smapper/"
-      cmd: "docker run --rm -it -p 8080:8000 -v ${PWD}:/docs squidfunk/mkdocs-material"
+      cmd: "docker run --rm -p 8080:8000 -v ${PWD}:/docs squidfunk/mkdocs-material"
 
     # - name: Realsense Camera
     #   id: realsense_service

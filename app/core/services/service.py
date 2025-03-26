@@ -1,11 +1,8 @@
 from enum import Enum
-from logging import log
 import psutil
-import signal
-import time
 import os
 import subprocess
-from typing import Dict, Optional, Callable
+from typing import Dict, Optional
 
 
 from pydantic import BaseModel
@@ -67,7 +64,6 @@ class Service:
         self._process = None
 
     def start(self, restart: bool = False) -> None:
-        logger.debug(f"[service:{self._id}] Starting Service")
         self.poll()
         if (
             self._process
@@ -82,6 +78,7 @@ class Service:
                 self._cmd,
                 "",
             )
+        logger.info(f"[service:{self._id}] Create service process")
 
         self._process = psutil.Popen(
             args=self._cmd,
@@ -89,6 +86,7 @@ class Service:
             cwd=self._cwd,
             shell=True,
             text=True,
+            stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
@@ -141,7 +139,6 @@ class Service:
         self.start()
 
     def get_state(self) -> ServiceState:
-        self.poll()
         return self._state
 
     def get_schema(self) -> ServiceSchema:
@@ -169,19 +166,20 @@ class Service:
 
         ret_code = self._process.poll()
 
-        logger.warning(f"Process return code: {ret_code}/{self._process.is_running()}")
-
         if ret_code is None:
             return
-        if ret_code == 0:
+        if ret_code == 0 and self._state is not ServiceState.TERMINATED:
             logger.info(f"[service:{self._id}] Process has terminated cleanly.")
             self._state = ServiceState.TERMINATED
             return
 
-        logger.error(f"[service:{self._id}] Process has terminated with error.")
-        _, stderr = self._process.communicate()
-        self._failure_reason = ServiceFailure(ret_code=ret_code, std_err=stderr)
-        self._state = ServiceState.FAILURE
+        if self._state is not ServiceState.FAILURE:
+            _, stderr = self._process.communicate()
+            self._failure_reason = ServiceFailure(ret_code=ret_code, std_err=stderr)
+            self._state = ServiceState.FAILURE
+            logger.error(
+                f"[service:{self._id}] Process has terminated with error -> {self._failure_reason.__repr__()}"
+            )
 
         # NOTE: consider a way to notify caller to Service in case of failure
         if self._restart_on_failure and self._max_restart_attempts > 0:
