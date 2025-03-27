@@ -30,7 +30,7 @@ class RosService(Service):
             )
             self._state = ServiceState.FAILURE
 
-        self._cmd = self.__build_cmd(ros_distro, exec_type, pkg_name, exec) or ""
+        self._cmd = self.__build_cmd(ros_distro, exec_type, pkg_name, ws, exec) or ""
 
     def __is_ros_available(self, distro: str) -> bool:
         return os.path.exists(f"/opt/ros/{distro}")
