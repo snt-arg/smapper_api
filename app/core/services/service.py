@@ -1,4 +1,5 @@
 from enum import Enum
+import signal
 import psutil
 import os
 import subprocess
@@ -95,7 +96,7 @@ class Service:
 
         self.poll()
 
-    def stop(self, timeout: int = 3) -> None:
+    def stop(self, timeout: int = 4) -> None:
         logger.debug(f"[service:{self._id}] Stopping Service")
         self.poll()
 
@@ -112,8 +113,12 @@ class Service:
 
         for child_proc in self._process.children(recursive=True):
             try:
-                child_proc.terminate()
+                child_proc.send_signal(signal.SIGINT)
                 child_proc.wait(timeout)
+            except psutil.NoSuchProcess:
+                # NOTE: This happens because send_signal kills the process and wait fails
+                # This is ok. We keep the wait in case the process did not finish.
+                pass
             except psutil.TimeoutExpired:
                 logger.warning(
                     f"[service:{self._id}] Timeout while stopping child process. Forcing termination."
@@ -123,7 +128,8 @@ class Service:
 
         try:
             self._process.terminate()
-            self._process.wait(timeout)
+        except psutil.NoSuchProcess:
+            pass
         except psutil.TimeoutExpired:
             logger.warning(
                 f"[service:{self._id}] Timeout while stopping process. Forcing termination."
@@ -131,7 +137,6 @@ class Service:
             self._process.kill()
             self._process.wait()
 
-        self._process = None
         self._state = ServiceState.INACTIVE
 
     def restart(self, timeout: int = 3) -> None:
@@ -168,15 +173,18 @@ class Service:
 
         if ret_code is None:
             return
+
         if ret_code == 0 and self._state is not ServiceState.TERMINATED:
             logger.info(f"[service:{self._id}] Process has terminated cleanly.")
             self._state = ServiceState.TERMINATED
+            self._process = None
             return
 
         if self._state is not ServiceState.FAILURE:
             _, stderr = self._process.communicate()
             self._failure_reason = ServiceFailure(ret_code=ret_code, std_err=stderr)
             self._state = ServiceState.FAILURE
+            self._process = None
             logger.error(
                 f"[service:{self._id}] Process has terminated with error -> {self._failure_reason.__repr__()}"
             )
