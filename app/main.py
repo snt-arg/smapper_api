@@ -4,9 +4,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.lifespan import lifespan
 from app.dependencies import get_api_settings
 from app.exceptions import init_exception_handlers
-from app.routers.v1 import sensors_router, bags_router, power_router, services_router
+from app.routers.v1 import (
+    sensors_router,
+    bags_router,
+    power_router,
+    services_router,
+    ros_router,
+)
 
-# Get settings loded from configuration file
+# Get settings loaded from configuration file
 api_settings = get_api_settings()
 
 app = FastAPI(
@@ -26,6 +32,7 @@ app.include_router(sensors_router)
 app.include_router(services_router)
 app.include_router(bags_router)
 app.include_router(power_router)
+app.include_router(ros_router)
 
 # Setup CORS Middleware.
 app.add_middleware(

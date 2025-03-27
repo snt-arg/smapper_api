@@ -8,8 +8,10 @@ from app.schemas import ServiceSchema, RosServiceSchema
 from app.logger import logger
 from app.dependencies import (
     get_device_settings,
+    get_topic_monitor_runner,
     get_service_manager,
 )
+from app.core.ros.topic_monitor import TopicMonitorRunner
 
 
 def init_services(
@@ -33,11 +35,14 @@ async def lifespan(
 ):
     # Executed on startup
     service_manager = get_service_manager()
+    topic_monitor_runner = get_topic_monitor_runner()
     config = get_device_settings()
 
     init_services(service_manager, config)
+    topic_monitor_runner.start()
 
     yield
     # Executed on shutdown
 
     terminate_services(service_manager)
+    topic_monitor_runner.stop()

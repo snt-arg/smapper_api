@@ -1,5 +1,5 @@
-from pydantic import Field
-from typing import Tuple, Type
+from pydantic import BaseModel, Field
+from typing import List, Tuple, Type
 
 from pydantic_settings import (
     BaseSettings,
@@ -46,6 +46,10 @@ the /docs endpoint for the device documentation
         return (YamlConfigSettingsSource(settings_cls),)
 
 
+class RosSchema(BaseModel):
+    topics_to_monitor: List[str]
+
+
 class DeviceSettings(BaseSettings):
     services: list[ServiceSchema | RosServiceSchema] = Field(default=[])
     sensors: list[SensorSchema] = Field(default=[])
@@ -56,6 +60,7 @@ class DeviceSettings(BaseSettings):
     device_name: str = Field(default="smapper")
     autostart_services: bool = Field(default=False)
     bags_storage_path: str = Field(default="")
+    ros: RosSchema = Field(default=RosSchema(topics_to_monitor=[]))
 
     model_config = SettingsConfigDict(yaml_file="config/device_config.yaml")
 

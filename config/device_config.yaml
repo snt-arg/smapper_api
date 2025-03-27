@@ -27,7 +27,7 @@ services:
       id: lidar_service
       exec_type: "LAUNCH"
       ros_distro: humble
-      ws: "$HOME/smapper/software/ros_ws"
+      ws: "$HOME/shared/smapper/software/ros_ws"
       pkg_name: "smapper_bringup"
       exec: "lidar.launch.py"
       env:
@@ -37,7 +37,7 @@ services:
       id: argus_cam_service
       exec_type: "LAUNCH"
       ros_distro: humble
-      ws: "$HOME/smapper/software/ros_ws"
+      ws: "$HOME/shared/smapper/software/ros_ws"
       pkg_name: "smapper_bringup"
       exec: "argus_cameras.launch.py"
       env:
@@ -57,3 +57,8 @@ services:
     #   exec: "realsense.launch.py"
     #   env:
     #      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+
+ros:
+    topics_to_monitor:
+        - /topic1
+        - /topic2
