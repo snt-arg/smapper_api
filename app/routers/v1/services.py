@@ -36,7 +36,7 @@ def get_service_state_by_id(
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
 ) -> ServiceStateSchema:
     state = manager.get_service_state(id)
-    return ServiceStateSchema(state=state.name, value=state.value)
+    return ServiceStateSchema(state=state.name)
 
 
 @router.post("/services/{id}/start", description="Start service with id")
@@ -46,7 +46,7 @@ def start_service_with_id(
 ) -> ServiceStateSchema:
     manager.start_service(id)
     state = manager.get_service_state(id)
-    return ServiceStateSchema(state=state.name, value=state.value)
+    return ServiceStateSchema(state=state.name)
 
 
 @router.post("/services/{id}/stop", description="Stop service with id")
@@ -56,4 +56,4 @@ def stop_service_with_id(
 ):
     manager.stop_service(id)
     state = manager.get_service_state(id)
-    return ServiceStateSchema(state=state.name, value=state.value)
+    return ServiceStateSchema(state=state.name)

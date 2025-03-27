@@ -8,7 +8,6 @@ from app.logger import logger
 from app.schemas.services import RosServiceSchema, ServiceSchema
 
 # TODO: Improve errors/exceptions
-# Have a thread polling all services in order to check their state.
 
 
 class ServiceManager:
@@ -19,27 +18,26 @@ class ServiceManager:
             name="service_manager_polling_thread",
             daemon=True,
         )
-
+        self.lock = threading.Lock()
         self._poll_thread.start()
 
     def _poll_services_cb(self):
         while True:
             logger.debug("Polling services...")
             for _, service in self.services.items():
+                self.lock.acquire()
                 service.poll()
+                self.lock.release()
             time.sleep(1)
 
     def add_service(self, service: ServiceSchema | RosServiceSchema) -> bool:
         if self.services.get(service.id):
             logger.error(f"A Service with id: {id} already exists")
             return False
-        if service.srv_type == "SERVICE":
+        if isinstance(service, ServiceSchema):
             self.services[service.id] = Service(**service.model_dump())
-        elif service.srv_type == "ROS_SERVICE":
-            self.services[service.id] = RosService(**service.model_dump())
         else:
-            logger.error(f"Service type {service.srv_type} is unknown.")
-            return False
+            self.services[service.id] = RosService(**service.model_dump())
 
         return True
 
