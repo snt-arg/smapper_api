@@ -19,6 +19,8 @@ class RosService(Service):
     ) -> None:
         super().__init__(name, id, srv_type, "", env)
 
+        ws = os.path.expandvars(ws)
+
         if not os.path.exists(ws):
             logger.error(f"Workspace {ws} does not exist. Service will be unavailable")
             self._state = ServiceState.ERROR
@@ -29,20 +31,22 @@ class RosService(Service):
             )
             self._state = ServiceState.ERROR
 
-        self._cmd = self.__build_cmd(ros_distro, exec_type, pkg_name, exec)
+        self._cmd = self.__build_cmd(ros_distro, exec_type, pkg_name, ws, exec)
 
     def __is_ros_available(self, distro: str) -> bool:
         return os.path.exists(f"/opt/ros/{distro}")
 
     def __get_source_ros_cmd(self, distro: str) -> str:
-        return f"source /opt/ros/{distro}/setup.bash"
+        return f". /opt/ros/{distro}/setup.sh"
 
     def __build_cmd(
-        self, distro: str, exec_type: str, pkg_name: str, executable: str
+        self, distro: str, exec_type: str, pkg_name: str, ws: str, executable: str
     ) -> str | None:
         exec_type = exec_type.upper()
 
-        cmd = self.__get_source_ros_cmd(distro) + "&&"
+        cmd = self.__get_source_ros_cmd(distro) + " && "
+        ws_setup_file = os.path.join(ws, "install", "setup.sh")
+        cmd += f". {ws_setup_file} && "
 
         if exec_type == "NODE":
             cmd += f"ros2 run {pkg_name} {executable}"
