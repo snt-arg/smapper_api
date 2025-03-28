@@ -8,7 +8,10 @@ from app.schemas.ros import TopicSchema
 router = APIRouter(prefix="/api/v1")
 
 
-@router.get("/ros/topics", description="Get a list topics states")
+@router.get(
+    "/ros/topics",
+    description="Get a list of current ROS topics being monitored, along with their state (status, frequency, message count, etc).",
+)
 def get_ros_topics(
     runner: Annotated[TopicMonitorRunner, Depends(get_topic_monitor_runner)],
 ) -> List[TopicSchema]:
@@ -26,7 +29,10 @@ def get_ros_topics(
     return states
 
 
-@router.get("/ros/topics/{topic_name}", description="Get the topic state by the name")
+@router.get(
+    "/ros/topics/{topic_name}",
+    description="Get the current monitoring state for a specific ROS topic by its name.",
+)
 def get_topic_by_name(
     topic_name: str,
     runner: Annotated[TopicMonitorRunner, Depends(get_topic_monitor_runner)],
@@ -43,7 +49,10 @@ def get_topic_by_name(
     )
 
 
-@router.post("/ros/topics/", description="Get the topic state by the name")
+@router.post(
+    "/ros/topics/",
+    description="Add a new topic to be monitored. If the topic becomes available, it will be automatically subscribed to.",
+)
 def add_topic_to_monitor(
     topic_name: str,
     runner: Annotated[TopicMonitorRunner, Depends(get_topic_monitor_runner)],
@@ -51,7 +60,10 @@ def add_topic_to_monitor(
     runner.add_topic_to_monitor(topic_name)
 
 
-@router.delete("/ros/topics/", description="Get the topic state by the name")
+@router.delete(
+    "/ros/topics/",
+    description="Remove a topic from the monitoring list. If subscribed, it will be unsubscribed and cleaned up.",
+)
 def remove_topic_to_monitor(
     topic_name: str,
     runner: Annotated[TopicMonitorRunner, Depends(get_topic_monitor_runner)],
@@ -59,7 +71,10 @@ def remove_topic_to_monitor(
     runner.remove_topic_from_monitor(topic_name)
 
 
-# @router.post("/ros/topics/", description="Get the topic state by the name")
+# @router.post(
+#     "/ros/topics/batch",
+#     description="Add multiple topics to the monitor list in a single request.",
+# )
 # def add_topics_to_monitor(
 #     topic_names: List[str],
 #     runner: Annotated[TopicMonitorRunner, Depends(get_topic_monitor_runner)],
@@ -67,7 +82,10 @@ def remove_topic_to_monitor(
 #     runner.add_topics_to_monitor(topic_names)
 
 
-# @router.delete("/ros/topics/", description="Get the topic state by the name")
+# @router.delete(
+#     "/ros/topics/batch",
+#     description="Remove multiple topics from the monitor list in a single request.",
+# )
 # def remove_topics_to_monitor(
 #     topic_names: List[str],
 #     runner: Annotated[TopicMonitorRunner, Depends(get_topic_monitor_runner)],

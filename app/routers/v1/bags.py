@@ -10,14 +10,20 @@ from app.schemas.services import ServiceStateSchema
 router = APIRouter(prefix="/api/v1")
 
 
-@router.get("/bags")
+@router.get(
+    "/bags",
+    description="Return a list of all available bag recordings with associated metadata.",
+)
 def get_bags(
     bag_manager: Annotated[BagManager, Depends(get_bag_manager)],
 ) -> List[BagSchema]:
     return bag_manager.get_bags()
 
 
-@router.get("/bags/{id}")
+@router.get(
+    "/bags/{id}",
+    description="Fetch detailed information about a specific bag by its ID.",
+)
 def get_bag_by_id(
     id: str, bag_manager: Annotated[BagManager, Depends(get_bag_manager)]
 ) -> BagSchema:
@@ -29,7 +35,10 @@ def get_bag_by_id(
     return bag
 
 
-@router.post("/bags/record/start")
+@router.post(
+    "/bags/record/start",
+    description="Start a new rosbag recording session for the selected topics.",
+)
 def create_bag(
     request: BagRecordingRequestSchema,
     bag_manager: Annotated[BagManager, Depends(get_bag_manager)],
@@ -37,7 +46,10 @@ def create_bag(
     return bag_manager.create_bag(request)
 
 
-@router.post("/bags/record/stop")
+@router.post(
+    "/bags/record/stop",
+    description="Stop the currently running rosbag recording session.",
+)
 def stop_bag_recording(
     bag_manager: Annotated[BagManager, Depends(get_bag_manager)],
 ) -> BagSchema:
@@ -49,9 +61,12 @@ def stop_bag_recording(
     return bag_schema
 
 
-@router.get("/bags/record/state")
+@router.get(
+    "/bags/record/state",
+    description="Get the current state of the rosbag recording service.",
+)
 def get_bag_recording_state(
     bag_manager: Annotated[BagManager, Depends(get_bag_manager)],
 ) -> ServiceStateSchema:
     state = bag_manager.get_recording_state()
-    return ServiceStateSchema(state=state.name, value=state.value)
+    return ServiceStateSchema(state=state.name)

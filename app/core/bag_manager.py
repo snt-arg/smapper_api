@@ -23,12 +23,19 @@ from app.logger import logger
 
 
 class BagManager:
+    """Manages ROS2 bag recordings: creating, storing, reading, and stopping recordings."""
+
     bags: Dict[str, BagSchema] = {}
     storage_path: str
     rosbag_service: Optional[Service] = None
     recording_bag_metadata: Optional[RosbagMetadata] = None
 
     def __init__(self, storage_path: str):
+        """Initialize the bag manager and ensure the storage directory exists.
+
+        Args:
+            storage_path: Path to the directory where rosbag data will be stored.
+        """
         storage_path = os.path.expandvars(storage_path)
         if not os.path.exists(storage_path):
             self._create_storage_dir(storage_path)
@@ -38,14 +45,32 @@ class BagManager:
         self.__read_bags_storage()
 
     def _create_storage_dir(self, path: str) -> None:
+        """Create the storage directory if it doesn't exist.
+
+        Args:
+            path: Path to create.
+        """
         os.makedirs(path, exist_ok=True)
 
     def get_recording_state(self) -> ServiceState:
+        """Return the current state of the rosbag recording service."""
         if self.rosbag_service is None:
             return ServiceState.INACTIVE
         return self.rosbag_service.get_state()
 
     def create_bag(self, request: BagRecordingRequestSchema) -> BagCreationResponse:
+        """Start recording a new rosbag.
+
+        Args:
+            request: Bag creation request schema including topics and metadata.
+
+        Returns:
+            A response containing the bag ID and service state.
+
+        Raises:
+            BagRecordingOnGoingException: If a recording is already in progress.
+            Exception: If the rosbag fails to start.
+        """
         if self.rosbag_service and self.rosbag_service.is_running():
             raise BagRecordingOnGoingException()
 
@@ -66,19 +91,40 @@ class BagManager:
         )
 
     def stop_bag_recording(self) -> BagSchema:
+        """Stop the active rosbag recording.
+
+        Returns:
+            The BagSchema of the stopped bag.
+
+        Raises:
+            Exception: If there is no active recording to stop.
+        """
         if not self.rosbag_service or not self.rosbag_service.is_running():
             raise Exception("No active recording to stop")
         self.rosbag_service.stop()
 
+        # FIX: Don't use assert but throw an Exception
         assert self.recording_bag_metadata is not None
 
         self.__read_bags_storage()
         return self.get_bag_by_id(self.recording_bag_metadata.id)
 
     def get_bags(self) -> List[BagSchema]:
+        """Return a list of all stored bag schemas."""
         return [bag for _, bag in self.bags.items()]
 
     def get_bag_by_id(self, id: str) -> BagSchema:
+        """Retrieve a bag by its ID.
+
+        Args:
+            id: The unique ID of the bag.
+
+        Returns:
+            The corresponding BagSchema.
+
+        Raises:
+            BagNotFoundException: If the bag with the given ID is not found.
+        """
         bag = self.bags.get(id)
         if bag is None:
             raise BagNotFoundException(id)
@@ -86,9 +132,25 @@ class BagManager:
         return bag
 
     def _build_rosbag_path(self, name) -> str:
+        """Construct the absolute path for a given rosbag name.
+
+        Args:
+            name: Name of the rosbag.
+
+        Returns:
+            Absolute path to the bag directory.
+        """
         return os.path.join(self.storage_path, name)
 
     def _read_rosbag_metadata(self, path: str) -> MinimalRosbagMetadata:
+        """Read metadata from a rosbag folder.
+
+        Args:
+            path: Filesystem path to the rosbag folder.
+
+        Returns:
+            Parsed minimal rosbag metadata.
+        """
         file = os.path.join(path, "metadata.yaml")
         with open(file, "r") as f:
             metadata = yaml.safe_load(f)
@@ -120,6 +182,8 @@ class BagManager:
         )
 
     def __read_bags_storage(self) -> None:
+        """Scan the storage directory and populate internal `bags` dictionary with existing bags."""
+
         for bag_name in os.listdir(self.storage_path):
             bag_path = self._build_rosbag_path(bag_name)
             rosbag_metadata = self._read_rosbag_metadata(bag_path)
@@ -149,6 +213,14 @@ class BagManager:
             self.bags[id] = bag
 
     def __extract_id_from_name(self, name: str) -> Optional[str]:
+        """Extract the unique bag ID from the bag folder name.
+
+        Args:
+            name: Bag folder name.
+
+        Returns:
+            A valid base62-encoded ID or None if invalid.
+        """
         splits = name.split("_")
         if len(splits) == 0:
             return
@@ -162,8 +234,23 @@ class BagManager:
         return id
 
     def __generate_bag_id(self) -> str:
+        """Generate a unique base62-encoded bag ID.
+
+        Returns:
+            A new bag ID.
+        """
         return base62.encode(uuid.uuid4().int >> 64)
 
     def __generate_bag_name(self, id: str, name: str, include_date: bool = True) -> str:
+        """Construct a formatted bag name using ID, user-provided name, and date.
+
+        Args:
+            id: Unique bag ID.
+            name: User-defined base name for the bag.
+            include_date: Whether to include the current date.
+
+        Returns:
+            The full formatted name of the bag.
+        """
         date = datetime.datetime.now().strftime("%Y.%m.%d")
         return id + "_" + name + ("_" + date if include_date else "")

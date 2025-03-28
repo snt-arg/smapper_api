@@ -14,20 +14,38 @@ from app.schemas.services import ServiceSchema
 
 # NOTE: this can be considered a schema
 class ServiceFailure(BaseModel):
+    """Data model capturing details of a service failure.
+
+    Attributes:
+        ret_code: The return code from the failed process.
+        std_err: The standard error output from the process.
+    """
+
     ret_code: int
     std_err: str
 
 
 class ServiceState(Enum):
-    """Enum representing the state of the service."""
+    """Enum representing the state of the service.
 
-    INACTIVE = "INACTIVE"  # Service is not running
-    ACTIVE = "ACTIVE"  # Service is running
-    TERMINATED = "TERMINATED"  # Service has finished cleanly
-    FAILURE = "FAILURE"  # Service encountered an error
+    Members:
+        INACTIVE: Service is not running.
+        ACTIVE: Service is currently running.
+        TERMINATED: Service completed successfully and exited.
+        FAILURE: Service encountered an error and failed.
+    """
+
+    INACTIVE = "INACTIVE"
+    ACTIVE = "ACTIVE"
+    TERMINATED = "TERMINATED"
+    FAILURE = "FAILURE"
 
 
 class Service:
+    """Base class for managing long-lived external processes (services)
+    with lifecycle control.
+    """
+
     # Config
     _id: str
     _name: str
@@ -53,6 +71,17 @@ class Service:
         env: Optional[Dict[str, str]] = None,
         cwd: Optional[str] = None,
     ) -> None:
+        """Initialize the Service with its command, environment, and lifecycle behavior.
+
+        Args:
+            id: Unique identifier for the service.
+            name: Human-readable name for the service.
+            cmd: The command to execute the service.
+            auto_start: Whether to automatically start the service on initialization.
+            restart_on_failure: Whether to restart the service if it crashes.
+            env: Optional environment variables to override the default.
+            cwd: Optional working directory from which to launch the service.
+        """
         self._id = id
         self._name = name
         self._cmd = cmd
@@ -68,6 +97,11 @@ class Service:
             self.start()
 
     def start(self, restart: bool = False) -> None:
+        """Start the service process.
+
+        If already running and restart is False, raises a ServiceException.
+        Handles failure cases and updates internal state.
+        """
         self.poll()
         if (
             self._process
@@ -109,6 +143,11 @@ class Service:
         self._state = ServiceState.ACTIVE
 
     def stop(self, timeout: int = 4) -> None:
+        """Stop the service process and clean up child processes.
+
+        Args:
+            timeout: Maximum time (in seconds) to wait before force-killing.
+        """
         logger.debug(f"[service:{self._id}] Stopping Service")
         self.poll()
 
@@ -136,13 +175,20 @@ class Service:
         self._state = ServiceState.INACTIVE
 
     def restart(self, timeout: int = 3) -> None:
+        """Restart the service process by stopping and starting it again.
+
+        Args:
+            timeout: Timeout to wait while stopping before restarting.
+        """
         self.stop(timeout)
         self.start()
 
     def get_state(self) -> ServiceState:
+        """Return the current state of the service."""
         return self._state
 
     def get_schema(self) -> ServiceSchema:
+        """Return a structured representation (schema) of the service configuration."""
         return ServiceSchema(
             name=self._name,
             id=self._id,
@@ -152,9 +198,15 @@ class Service:
         )
 
     def is_running(self) -> bool:
+        """Check whether the service is currently running and marked ACTIVE."""
         return self._state is ServiceState.ACTIVE
 
     def _set_state(self, new_state: ServiceState) -> None:
+        """Update the service's internal state, with optional logging.
+
+        Args:
+            new_state: The new ServiceState to apply.
+        """
         if new_state == self._state:
             return
         self._state = new_state
@@ -163,6 +215,11 @@ class Service:
         )
 
     def poll(self) -> None:
+        """Check the current status of the service process.
+
+        Updates the internal state depending on exit codes.
+        Handles automatic restarts if enabled.
+        """
         if self._process is None:
             return
 
@@ -199,7 +256,7 @@ class Service:
         Gracefully terminate all child processes with improved error handling.
 
         Args:
-            timeout (float, optional): Timeout for graceful shutdown. Defaults to 5 seconds.
+            timeout (float, optional): Timeout for graceful shutdown. Defaults to 4 seconds.
         """
         assert self._process is not None
         # Get children processes only once to avoid potential race conditions
