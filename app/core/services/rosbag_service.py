@@ -14,6 +14,5 @@ class RosbagService(Service):
         super().__init__(
             name="Rosbag Service",
             id="rosbag_service",
-            srv_type="ROSBAG_SERVICE",
             cmd=cmd,
         )
