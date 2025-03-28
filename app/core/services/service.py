@@ -64,6 +64,9 @@ class Service:
         self._state = ServiceState.INACTIVE
         self._process = None
 
+        if self._auto_start:
+            self.start()
+
     def start(self, restart: bool = False) -> None:
         self.poll()
         if (
@@ -81,53 +84,46 @@ class Service:
             )
         logger.info(f"[service:{self._id}] Create service process")
 
-        self._process = psutil.Popen(
-            args=self._cmd,
-            env=self._env,
-            cwd=self._cwd,
-            shell=True,
-            text=True,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
+        try:
+            self._process = psutil.Popen(
+                args=self._cmd,
+                env=self._env,
+                cwd=self._cwd,
+                shell=True,
+                text=True,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        except Exception as e:
+            logger.error(f"[service:{self._id}] Failed to start service: {e}")
+            self._set_state(ServiceState.FAILURE)
+            self._failure_reason = ServiceFailure(ret_code=-1, std_err=str(e))
+            raise ServiceException(
+                self._id,
+                f"[service:{self._id}] Failed to start service",
+                self._cmd,
+                str(e),
+            )
 
         self._state = ServiceState.ACTIVE
-
-        self.poll()
 
     def stop(self, timeout: int = 4) -> None:
         logger.debug(f"[service:{self._id}] Stopping Service")
         self.poll()
 
-        if (
-            self._process is None
-            or self._state is ServiceState.INACTIVE
-            or self._state is ServiceState.FAILURE
-            or self._state is ServiceState.TERMINATED
-        ):
+        if self._process is None or self._state is not ServiceState.ACTIVE:
             logger.info(
                 f"[service:{self._id}] Service is not ACTIVE. Ignoring request."
             )
             return
 
-        for child_proc in self._process.children(recursive=True):
-            try:
-                child_proc.send_signal(signal.SIGINT)
-                child_proc.wait(timeout)
-            except psutil.NoSuchProcess:
-                # NOTE: This happens because send_signal kills the process and wait fails
-                # This is ok. We keep the wait in case the process did not finish.
-                pass
-            except psutil.TimeoutExpired:
-                logger.warning(
-                    f"[service:{self._id}] Timeout while stopping child process. Forcing termination."
-                )
-                child_proc.kill()
-                child_proc.wait()
+        self._terminate_child_processes(timeout)
 
         try:
-            self._process.terminate()
+            if self._process.is_running():
+                self._process.terminate()
+                self._process.wait(timeout)
         except psutil.NoSuchProcess:
             pass
         except psutil.TimeoutExpired:
@@ -197,3 +193,44 @@ class Service:
             self._max_restart_attempts -= 1
             logger.info(f"[service:{self._id}] Restarting service after failure.")
             self.restart()
+
+    def _terminate_child_processes(self, timeout=4):
+        """
+        Gracefully terminate all child processes with improved error handling.
+
+        Args:
+            timeout (float, optional): Timeout for graceful shutdown. Defaults to 5 seconds.
+        """
+        assert self._process is not None
+        # Get children processes only once to avoid potential race conditions
+        child_processes = self._process.children(recursive=True)
+
+        if not child_processes:
+            return
+
+        # Attempt a graceful shutdown with SIGINT
+        for child_proc in child_processes:
+            try:
+                if child_proc.is_running():
+                    child_proc.send_signal(signal.SIGINT)
+            except psutil.NoSuchProcess:
+                continue
+
+        # Wait for processes to terminate
+        for child_proc in child_processes:
+            try:
+                if child_proc.is_running():
+                    child_proc.wait(timeout)
+            except psutil.NoSuchProcess:
+                continue
+            except psutil.TimeoutExpired:
+                try:
+                    logger.warning(
+                        f"[service:{self._id}] Timeout while stopping child process. Forcing termination."
+                    )
+                    child_proc.kill()
+                    child_proc.wait(timeout=2)
+                except (psutil.NoSuchProcess, psutil.TimeoutExpired):
+                    logger.error(
+                        f"[service:{self._id}] Unable to terminate child process {child_proc.pid}"
+                    )
