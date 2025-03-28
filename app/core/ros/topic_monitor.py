@@ -1,7 +1,7 @@
 from collections import defaultdict
 import threading
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
 from pydantic import BaseModel, Field
 import rclpy
 from rclpy.node import Node, Subscription
@@ -58,12 +58,35 @@ class TopicMonitor(Node):
         self._topics_to_monitor.update(topics)
 
     def remove_topic_from_monitor(self, topic: str) -> None:
-        self._topics_to_monitor.remove(topic)
-        # This causes spin_once to crash
-        # self._topic_subs[topic].destroy()
+        """
+        Safely remove a topic from monitoring.
+        """
+        try:
+            if topic in self._topics_to_monitor:
+                self._topics_to_monitor.remove(topic)
+
+            if topic in self._topic_subs:
+                sub = self._topic_subs[topic]
+
+                try:
+                    if sub in self._subscriptions:
+                        self._subscriptions.remove(sub)
+                except Exception as e:
+                    logger.warning(f"Error removing subscription from node: {e}")
+
+                del self._topic_subs[topic]
+
+            if topic in self._topic_states:
+                del self._topic_states[topic]
+
+            logger.info(f"Removed topic {topic} from monitoring")
+
+        except Exception as e:
+            logger.error(f"Failed to remove topic {topic}: {e}")
 
     def remove_topics_from_monitor(self, topics: List[str]) -> None:
-        self._topics_to_monitor.difference_update(topics)
+        for topic in topics:
+            self.remove_topic_from_monitor(topic)
 
     def _discover_new_topics(self) -> None:
         available_topics = self.get_topic_names_and_types()
@@ -139,6 +162,8 @@ class TopicMonitor(Node):
         state.last_rcv_ts = current_time
         state.message_count += 1
 
+        logger.debug(f"Received msg from {topic_name}")
+
     def _monitor_topics(self) -> None:
         """Monitor the topics and log the status"""
         for topic_name, state in self._topic_states.items():
@@ -167,11 +192,10 @@ class TopicMonitorRunner:
         self._thread.start()
 
     def stop(self):
-        if self._node:
-            self._node.destroy_node()
         self._running = False
-        if self._thread:
+        if self._thread and self._thread.is_alive():
             self._thread.join()
+        rclpy.try_shutdown()
 
     def get_all_topic_states(self) -> Dict[str, TopicState]:
         if self._node:
@@ -198,6 +222,7 @@ class TopicMonitorRunner:
             try:
                 rclpy.spin_once(self._node)
             except:
-                logger.warning("Always crashing?")
-        self._node.destroy_node()
-        rclpy.shutdown()
+                logger.error("Failed to spin Topic Monitor Ros node")
+                break
+        if self._node:
+            self._node.destroy_node()
