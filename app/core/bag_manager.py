@@ -1,5 +1,3 @@
-from os.path import exists
-import time
 import datetime
 import os
 import base62
@@ -20,7 +18,6 @@ from app.schemas.ros import TopicSchema
 from app.exceptions import (
     BagNotFoundException,
     BagRecordingOnGoingException,
-    NotYetImplementedException,
 )
 from app.logger import logger
 
@@ -34,13 +31,13 @@ class BagManager:
     def __init__(self, storage_path: str):
         storage_path = os.path.expandvars(storage_path)
         if not os.path.exists(storage_path):
-            self.create_storage_dir(storage_path)
+            self._create_storage_dir(storage_path)
         assert os.path.exists(storage_path), "Storage path does not exist"
         self.storage_path = storage_path
 
         self.__read_bags_storage()
 
-    def create_storage_dir(self, path: str) -> None:
+    def _create_storage_dir(self, path: str) -> None:
         os.makedirs(path, exist_ok=True)
 
     def get_recording_state(self) -> ServiceState:
@@ -105,7 +102,13 @@ class BagManager:
             msg_type = topic_metadata["type"]
             message_count = topic["message_count"]
             topics.append(
-                TopicSchema(name=name, msg_type=msg_type, message_count=message_count)
+                TopicSchema(
+                    name=name,
+                    msg_type=msg_type,
+                    message_count=message_count,
+                    hz=0,
+                    status="UNDEFINED",
+                )
             )
 
         return MinimalRosbagMetadata(
