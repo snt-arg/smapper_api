@@ -1,3 +1,4 @@
+from os.path import exists
 import time
 import datetime
 import os
@@ -31,10 +32,16 @@ class BagManager:
     recording_bag_metadata: Optional[RosbagMetadata] = None
 
     def __init__(self, storage_path: str):
+        storage_path = os.path.expandvars(storage_path)
+        if not os.path.exists(storage_path):
+            self.create_storage_dir(storage_path)
         assert os.path.exists(storage_path), "Storage path does not exist"
         self.storage_path = storage_path
 
         self.__read_bags_storage()
+
+    def create_storage_dir(self, path: str) -> None:
+        os.makedirs(path, exist_ok=True)
 
     def get_recording_state(self) -> ServiceState:
         if self.rosbag_service is None:
