@@ -155,6 +155,9 @@ class Service:
             env=self._env,
         )
 
+    def is_running(self) -> bool:
+        return self._state is ServiceState.ACTIVE
+
     def _set_state(self, new_state: ServiceState) -> None:
         if new_state == self._state:
             return
