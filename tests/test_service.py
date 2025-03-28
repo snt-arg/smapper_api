@@ -1,7 +1,7 @@
 import unittest
+import time
 
 from app.core.services import Service, ServiceState
-from app.exceptions import ServiceException
 
 
 class TestService(unittest.TestCase):
@@ -21,7 +21,9 @@ class TestService(unittest.TestCase):
         process = Service(
             "Bad Service Test", "test_service", "this command does not exist"
         )
-        self.assertRaises(ServiceException, process.start)
+        process.start()
+        time.sleep(0.1)
+        process.poll()
         self.assertEqual(process.get_state(), ServiceState.FAILURE)
 
 
