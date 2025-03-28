@@ -225,4 +225,7 @@ class TopicMonitorRunner:
                 logger.error("Failed to spin Topic Monitor Ros node")
                 break
         if self._node:
-            self._node.destroy_node()
+            try:
+                self._node.destroy_node()
+            except Exception as e:
+                logger.error(f"Error destroying node: {e}")
