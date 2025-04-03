@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from typing import Annotated
+from typing_extensions import runtime
 
 from fastapi import Depends, FastAPI
 from app.core.service_manager import ServiceManager
@@ -62,10 +63,12 @@ async def lifespan(app: FastAPI):
     config = get_device_settings()
 
     init_services(service_manager, config)
-    topic_monitor_runner.start()
+    if topic_monitor_runner:
+        topic_monitor_runner.start()
 
     yield
 
     # Executed on shutdown
     terminate_services(service_manager)
-    topic_monitor_runner.stop()
+    if topic_monitor_runner:
+        topic_monitor_runner.stop()

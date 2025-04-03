@@ -1,10 +1,15 @@
 from functools import lru_cache
 
 from app.config.settings import APISettings, AppSettings, DeviceSettings
-from app.core.ros.topic_monitor import TopicMonitorRunner
+from app.core.ros.ros_factory import create_topic_monitor_runner
 from app.core.service_manager import ServiceManager
 from app.core.bag_manager import BagManager
 from app.logger import logger
+from typing import TYPE_CHECKING, Optional
+
+
+if TYPE_CHECKING:
+    from app.core.ros.topic_monitor import TopicMonitorRunner
 
 
 @lru_cache()
@@ -69,7 +74,7 @@ def get_bag_manager() -> BagManager:
 
 
 @lru_cache()
-def get_topic_monitor_runner() -> TopicMonitorRunner:
+def get_topic_monitor_runner() -> Optional["TopicMonitorRunner"]:
     """Get a singleton instance of the TopicMonitorRunner.
 
     Initializes the monitor with topics configured in device settings.
@@ -78,5 +83,11 @@ def get_topic_monitor_runner() -> TopicMonitorRunner:
         TopicMonitorRunner: Continuously monitors ROS topic activity.
     """
     logger.debug("Get bag manager dependency called")
-    runner = TopicMonitorRunner(get_device_settings().ros.topics_to_monitor)
-    return runner
+
+    try:
+        runner = create_topic_monitor_runner(
+            get_device_settings().ros.topics_to_monitor
+        )
+        return runner
+    except RuntimeError:
+        return None
