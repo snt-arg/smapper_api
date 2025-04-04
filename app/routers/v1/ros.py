@@ -1,8 +1,11 @@
-from typing import Annotated, List
+from typing import Annotated, List, TYPE_CHECKING
 from fastapi import APIRouter, Depends
-from app.core.ros.topic_monitor import TopicMonitorRunner
 from app.dependencies import get_topic_monitor_runner
 from app.schemas.ros import TopicSchema
+
+
+if TYPE_CHECKING:
+    from app.core.ros.topic_monitor import TopicMonitorRunner
 
 
 router = APIRouter(prefix="/api/v1")
@@ -13,19 +16,20 @@ router = APIRouter(prefix="/api/v1")
     description="Get a list of current ROS topics being monitored, along with their state (status, frequency, message count, etc).",
 )
 def get_ros_topics(
-    runner: Annotated[TopicMonitorRunner, Depends(get_topic_monitor_runner)],
+    runner: Annotated["TopicMonitorRunner", Depends(get_topic_monitor_runner)],
 ) -> List[TopicSchema]:
     states = []
-    for name, state in runner.get_all_topic_states().items():
-        states.append(
-            TopicSchema(
-                name=name,
-                msg_type=state.msg_type,
-                hz=state.hz,
-                message_count=state.message_count,
-                status=state.status.value,
+    if runner:
+        for name, state in runner.get_all_topic_states().items():
+            states.append(
+                TopicSchema(
+                    name=name,
+                    msg_type=state.msg_type,
+                    hz=state.hz,
+                    message_count=state.message_count,
+                    status=state.status.value,
+                )
             )
-        )
     return states
 
 
@@ -35,18 +39,19 @@ def get_ros_topics(
 )
 def get_topic_by_name(
     topic_name: str,
-    runner: Annotated[TopicMonitorRunner, Depends(get_topic_monitor_runner)],
+    runner: Annotated["TopicMonitorRunner", Depends(get_topic_monitor_runner)],
 ) -> TopicSchema | None:
-    state = runner.get_topic_state(topic_name)
-    if state is None:
-        return None
-    return TopicSchema(
-        name=topic_name,
-        msg_type=state.msg_type,
-        hz=state.hz,
-        message_count=state.message_count,
-        status=state.status.value,
-    )
+    if runner:
+        state = runner.get_topic_state(topic_name)
+        if state is None:
+            return None
+        return TopicSchema(
+            name=topic_name,
+            msg_type=state.msg_type,
+            hz=state.hz,
+            message_count=state.message_count,
+            status=state.status.value,
+        )
 
 
 @router.post(
@@ -55,9 +60,10 @@ def get_topic_by_name(
 )
 def add_topic_to_monitor(
     topic_name: str,
-    runner: Annotated[TopicMonitorRunner, Depends(get_topic_monitor_runner)],
+    runner: Annotated["TopicMonitorRunner", Depends(get_topic_monitor_runner)],
 ) -> None:
-    runner.add_topic_to_monitor(topic_name)
+    if runner:
+        runner.add_topic_to_monitor(topic_name)
 
 
 @router.delete(
@@ -66,9 +72,10 @@ def add_topic_to_monitor(
 )
 def remove_topic_to_monitor(
     topic_name: str,
-    runner: Annotated[TopicMonitorRunner, Depends(get_topic_monitor_runner)],
+    runner: Annotated["TopicMonitorRunner", Depends(get_topic_monitor_runner)],
 ) -> None:
-    runner.remove_topic_from_monitor(topic_name)
+    if runner:
+        runner.remove_topic_from_monitor(topic_name)
 
 
 # @router.post(
