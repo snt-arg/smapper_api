@@ -14,12 +14,12 @@ class TopicStatus(Enum):
     """Enum representing the status of a ros topic.
 
     Members:
-        ACTIVE: Topic is currently receiving messages
-        INACTIVE: Topic is not receiving any messages
+        ONLINE: Topic is currently receiving messages
+        OFFLINE: Topic is not receiving any messages
     """
 
-    ACTIVE = "ACTIVE"
-    INACTIVE = "INACTIVE"
+    ONLINE = "ONLINE"
+    OFFLINE = "OFFLINE"
 
 
 class TopicState(BaseModel):
@@ -27,14 +27,14 @@ class TopicState(BaseModel):
     message type, and message metrics.
 
     Attributes:
-        status: The current status of the topic (e.g., active or inactive).
+        status: The current status of the topic (e.g., online or offline).
         hz: Frequency in hertz, indicating how often messages are published.
         msg_type: The type of message associated with the topic.
         last_rcv_ts: Timestamp (in nanoseconds) for the last received message.
         message_count: Total number of messages that have been processed.
     """
 
-    status: TopicStatus = Field(default=TopicStatus.INACTIVE)
+    status: TopicStatus = Field(default=TopicStatus.OFFLINE)
     hz: float = Field(default=0.0)
     msg_type: str
     last_rcv_ts: float
@@ -68,7 +68,7 @@ class TopicMonitor(Node):
             topic_list: A list of topics to monitor.
             monitor_rate: The rate (in seconds) at which to check topic statuses.
             discover_rate: The rate (in seconds) at which to discover new topics.
-            topic_timeout: The timeout period (in seconds) after which a topic is considered inactive.
+            topic_timeout: The timeout period (in seconds) after which a topic is considered offline.
         """
         super().__init__(node_name)
         self._topic_states = defaultdict()
@@ -196,7 +196,7 @@ class TopicMonitor(Node):
             self._topic_subs[topic_name] = sub
 
             self._topic_states[topic_name] = TopicState(
-                status=TopicStatus.INACTIVE,
+                status=TopicStatus.OFFLINE,
                 msg_type=msg_type_str,
                 hz=0,
                 last_rcv_ts=0,
@@ -243,7 +243,7 @@ class TopicMonitor(Node):
         time_diff = current_time - self._topic_states[topic_name].last_rcv_ts
         state = self._topic_states[topic_name]
 
-        state.status = TopicStatus.ACTIVE
+        state.status = TopicStatus.ONLINE
         state.hz = 1.0 / time_diff if time_diff > 0 else 0
         state.last_rcv_ts = current_time
         state.message_count += 1
@@ -254,12 +254,12 @@ class TopicMonitor(Node):
         """Monitor the topics and update their status.
 
         This method periodically checks if any topic has exceeded the timeout period
-        since its last received message, marking such topics as inactive.
+        since its last received message, marking such topics as offline.
         """
         for topic_name, state in self._topic_states.items():
             current_time = time.time()
             if current_time - state.last_rcv_ts > self._topic_timeout:
-                state.status = TopicStatus.INACTIVE
+                state.status = TopicStatus.OFFLINE
                 state.hz = 0
 
             logger.debug(
