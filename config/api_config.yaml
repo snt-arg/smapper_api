@@ -4,10 +4,16 @@ version: 0.1.0
 description: |
     # SMapper API
 
-    SMapper API is the main contact point with the handheld device. It can be used 
-    to check which sensors are currently installed, start/stop/restart a set of services,
-    and more, like powering off the onboard computer. For more information, you can visit
-    the /docs endpoint for the device documentation
+    **SMapper API** is the main interface for interacting with the handheld device. It provides endpoints to:
+
+    * List and inspect installed sensors
+    * Monitor ROS topics in real time
+    * Start, stop, and restart device services (including ROS nodes and launch files)
+    * Record and manage ROS bag files
+    * Check system status and metadata
+    * Trigger system-level actions like rebooting or powering off the onboard computer (WIP)
+
+    For the device documentation and detailed usage, visit the /docs endpoint
 
 docs_url: /api/docs
 openapi_url: /api/openapi.json
