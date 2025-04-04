@@ -60,5 +60,13 @@ services:
 
 ros:
     topics_to_monitor:
-        - /topic1
-        - /topic2
+        - /ouster/points
+        - /ouster/imu
+        - /camera/front_right/image_raw
+        - /camera/front_right/camera_info
+        - /camera/front_left/image_raw
+        - /camera/front_left/camera_info
+        - /camera/side_left/image_raw
+        - /camera/side_left/camera_info
+        - /camera/side_right/image_raw
+        - /camera/side_right/camera_info
