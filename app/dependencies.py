@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from app.config.settings import APISettings, AppSettings, DeviceSettings
+from app.settings import APISettings, AppSettings, DeviceSettings
 from app.core.ros.ros_factory import create_topic_monitor_runner
 from app.core.service_manager import ServiceManager
 from app.core.bag_manager import BagManager

@@ -4,7 +4,7 @@ from typing_extensions import runtime
 
 from fastapi import Depends, FastAPI
 from app.core.service_manager import ServiceManager
-from app.config.settings import DeviceSettings
+from app.settings import DeviceSettings
 from app.logger import logger
 from app.dependencies import (
     get_device_settings,

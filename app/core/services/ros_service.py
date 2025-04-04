@@ -16,6 +16,8 @@ class RosService(Service):
         self,
         name: str,
         id: str,
+        auto_start: bool,
+        restart_on_failure: bool,
         ros_distro: str,
         exec_type: str,
         ws: str,
@@ -39,7 +41,14 @@ class RosService(Service):
             If the workspace path doesn't exist or the ROS distribution is not found,
             the service state is set to FAILURE.
         """
-        super().__init__(name, id, "", env=env)
+        super().__init__(
+            name,
+            id,
+            "",
+            env=env,
+            auto_start=auto_start,
+            restart_on_failure=restart_on_failure,
+        )
 
         ws = os.path.expandvars(ws)
 

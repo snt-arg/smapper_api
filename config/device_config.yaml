@@ -1,72 +1,77 @@
 device_name: SMapper
 revision: "2.1"
-autostart_services: false
 bags_storage_path: "/home/pedros/rosbox_shared/BagStorage/"
 
 onboard_pc:
-    model: Jetson AGX Orin Development Kit
+  model: Jetson AGX Orin Development Kit
 
 sensors:
-    - name: lidar
-      model: Ouster OS0-64
-      type: LIDAR
-      service_id: lidar_service
+  - name: lidar
+    model: Ouster OS0-64
+    type: LIDAR
+    service_id: lidar_service
 
-    - name: argus_cameras
-      model: e-CAM200_CUOAGX
-      type: CAMERA
-      service_id: argus_cam_service
+  - name: argus_cameras
+    model: e-CAM200_CUOAGX
+    type: CAMERA
+    service_id: argus_cam_service
 
-    - name: realsense
-      model: Realsense D435i
-      type: CAMERA
-      service_id: realsense_service
+  - name: realsense
+    model: Realsense D435i
+    type: CAMERA
+    service_id: realsense_service
 
 services:
-    - name: OusterROS
-      id: lidar_service
-      exec_type: "LAUNCH"
-      ros_distro: humble
-      ws: "$HOME/shared/smapper/software/ros_ws"
-      pkg_name: "smapper_bringup"
-      exec: "lidar.launch.py"
-      env:
-          RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+  - id: lidar_service
+    name: OusterROS
+    auto_start: false
+    restart_on_failure: false
+    exec_type: "LAUNCH"
+    ros_distro: humble
+    ws: "$HOME/shared/smapper/software/ros_ws"
+    pkg_name: "smapper_bringup"
+    exec: "lidar.launch.py"
+    env:
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
 
-    - name: Argus Cameras
-      id: argus_cam_service
-      exec_type: "LAUNCH"
-      ros_distro: humble
-      ws: "$HOME/shared/smapper/software/ros_ws"
-      pkg_name: "smapper_bringup"
-      exec: "argus_cameras.launch.py"
-      env:
-          RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+  - id: argus_cam_service
+    name: Argus Cameras
+    auto_start: false
+    restart_on_failure: false
+    exec_type: "LAUNCH"
+    ros_distro: humble
+    ws: "$HOME/shared/smapper/software/ros_ws"
+    pkg_name: "smapper_bringup"
+    exec: "argus_cameras.launch.py"
+    env:
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
 
-    - name: Device Documentation
-      id: dev_docs
-      cwd: "/home/pedros/rosbox_shared/smapper/"
-      cmd: "docker run --rm -p 8080:8000 -v ${PWD}:/docs squidfunk/mkdocs-material"
+  - id: dev_docs
+    name: Device Documentation
+    auto_start: true
+    restart_on_failure: false
+    cwd: "/home/pedros/rosbox_shared/smapper/"
+    cmd: "docker run --rm -p 8080:8000 -v ${PWD}:/docs squidfunk/mkdocs-material"
 
-    # - name: Realsense Camera
-    #   id: realsense_service
-    #   exec_type: "LAUNCH"
-    #   ros_distro: humble
-    #   ws: "$HOME/smapper/software/ros_ws"
-    #   pkg_name: "smapper_bringup"
-    #   exec: "realsense.launch.py"
-    #   env:
-    #      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+  # - name: Realsense Camera
+  #   id: realsense_service
+  #   exec_type: "LAUNCH"
+  #   ros_distro: humble
+  #   ws: "$HOME/smapper/software/ros_ws"
+  #   pkg_name: "smapper_bringup"
+  #   exec: "realsense.launch.py"
+  #   env:
+  #      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
 
 ros:
-    topics_to_monitor:
-        - /ouster/points
-        - /ouster/imu
-        - /camera/front_right/image_raw
-        - /camera/front_right/camera_info
-        - /camera/front_left/image_raw
-        - /camera/front_left/camera_info
-        - /camera/side_left/image_raw
-        - /camera/side_left/camera_info
-        - /camera/side_right/image_raw
-        - /camera/side_right/camera_info
+  topics_to_monitor:
+    - /ouster/points
+    - /ouster/imu
+    - /camera/front_right/image_raw
+    - /camera/front_right/camera_info
+    - /camera/front_left/image_raw
+    - /camera/front_left/camera_info
+    - /camera/side_left/image_raw
+    - /camera/side_left/camera_info
+    - /camera/side_right/image_raw
+    - /camera/side_right/camera_info

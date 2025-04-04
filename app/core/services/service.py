@@ -35,10 +35,10 @@ class ServiceState(Enum):
         FAILURE: Service encountered an error and failed.
     """
 
-    INACTIVE = "INACTIVE"
-    ACTIVE = "ACTIVE"
-    TERMINATED = "TERMINATED"
-    FAILURE = "FAILURE"
+    INACTIVE = "Inactive"
+    ACTIVE = "Active"
+    TERMINATED = "Terminated"
+    FAILURE = "Failure"
 
 
 class Service:
@@ -189,13 +189,7 @@ class Service:
 
     def get_schema(self) -> ServiceSchema:
         """Return a structured representation (schema) of the service configuration."""
-        return ServiceSchema(
-            name=self._name,
-            id=self._id,
-            cmd=self._cmd,
-            cwd=self._cwd,
-            env=self._env,
-        )
+        return ServiceSchema(id=self._id, name=self._name, state=self.get_state().value)
 
     def is_running(self) -> bool:
         """Check whether the service is currently running and marked ACTIVE."""
