@@ -2,17 +2,21 @@ from pydantic import BaseModel
 from typing import Optional, Dict
 
 
-class ServiceStateSchema(BaseModel):
-    """Schema representing the state of a service.
+class ServiceSchema(BaseModel):
+    """Schema for defining a basic external service.
 
     Attributes:
-        state: The current state of the service (e.g., "ACTIVE", "INACTIVE", "FAILURE").
+        id: Unique identifier for the service.
+        name: Human-readable name of the service.
+        state: The current state of the service
     """
 
+    id: str
+    name: str
     state: str
 
 
-class ServiceSchema(BaseModel):
+class ServiceConfigSchema(BaseModel):
     """Schema for defining a basic external service.
 
     Attributes:
@@ -26,11 +30,13 @@ class ServiceSchema(BaseModel):
     name: str
     id: str
     cmd: str
+    auto_start: bool
+    restart_on_failure: bool
     cwd: Optional[str] = None
     env: Optional[Dict[str, str]] = None
 
 
-class RosServiceSchema(BaseModel):
+class RosServiceConfigSchema(BaseModel):
     """Schema for defining a ROS-specific service.
 
     Attributes:
@@ -46,9 +52,11 @@ class RosServiceSchema(BaseModel):
 
     name: str
     id: str
-    env: Optional[Dict[str, str]] = None
+    auto_start: bool
+    restart_on_failure: bool
     exec_type: str
     ros_distro: str
     ws: str
     pkg_name: str
     exec: str
+    env: Optional[Dict[str, str]] = None

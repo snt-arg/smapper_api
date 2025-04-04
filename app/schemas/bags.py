@@ -3,6 +3,10 @@ from pydantic import BaseModel
 from .ros import TopicSchema
 
 
+class RecordingStatus(BaseModel):
+    status: str
+
+
 class MinimalRosbagMetadata(BaseModel):
     """Minimal representation of ROS2 bag metadata.
 

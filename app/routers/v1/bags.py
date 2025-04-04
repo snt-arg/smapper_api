@@ -4,7 +4,7 @@ from app.core.bag_manager import BagManager
 from app.dependencies import get_bag_manager
 from app.exceptions import BagNotFoundException
 from app.schemas import BagSchema, BagRecordingRequestSchema, BagCreationResponse
-from app.schemas.services import ServiceStateSchema
+from app.schemas.bags import RecordingStatus
 
 
 router = APIRouter(prefix="/api/v1")
@@ -67,6 +67,6 @@ def stop_bag_recording(
 )
 def get_bag_recording_state(
     bag_manager: Annotated[BagManager, Depends(get_bag_manager)],
-) -> ServiceStateSchema:
+) -> RecordingStatus:
     state = bag_manager.get_recording_state()
-    return ServiceStateSchema(state=state.name)
+    return RecordingStatus(status=state.name)

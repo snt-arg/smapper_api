@@ -1,11 +1,16 @@
 import threading
 import time
+from typing import List
 
 from app.core.services import Service, RosService
 from app.core.services.service import ServiceException, ServiceState
 from app.exceptions import ServiceManagerException
 from app.logger import logger
-from app.schemas.services import RosServiceSchema, ServiceSchema
+from app.schemas.services import (
+    RosServiceConfigSchema,
+    ServiceConfigSchema,
+    ServiceSchema,
+)
 
 # TODO: Improve errors/exceptions
 
@@ -36,7 +41,9 @@ class ServiceManager:
                 self.lock.release()
             time.sleep(1)
 
-    def add_service(self, service: ServiceSchema | RosServiceSchema) -> bool:
+    def add_service(
+        self, service: ServiceConfigSchema | RosServiceConfigSchema
+    ) -> bool:
         """Add a new service to the manager.
 
         Args:
@@ -48,7 +55,7 @@ class ServiceManager:
         if self.services.get(service.id):
             logger.error(f"A Service with id: {id} already exists")
             return False
-        if isinstance(service, ServiceSchema):
+        if isinstance(service, ServiceConfigSchema):
             self.services[service.id] = Service(**service.model_dump())
         else:
             self.services[service.id] = RosService(**service.model_dump())
@@ -147,6 +154,9 @@ class ServiceManager:
         service = self.__get_service_by_id(id)
         service.restart()
 
+    def get_services(self) -> List[ServiceSchema]:
+        return [service.get_schema() for _, service in self.services.items()]
+
     def get_service_by_id(self, id: str) -> ServiceSchema:
         """Retrieve the service schema for a specific service.
 
@@ -160,32 +170,6 @@ class ServiceManager:
             ServiceManagerException: If the service does not exist.
         """
         return self.__get_service_by_id(id).get_schema()
-
-    def get_service_state(self, id: str) -> ServiceState:
-        """Get the current state of a specific service.
-
-        Args:
-            id: The ID of the service.
-
-        Returns:
-            The current ServiceState.
-
-        Raises:
-            ServiceManagerException: If the service does not exist.
-        """
-        service = self.__get_service_by_id(id)
-        return service.get_state()
-
-    def get_service_states(self) -> dict[str, ServiceState]:
-        """Get the state of all managed services.
-
-        Returns:
-            A dictionary mapping service IDs to their current states.
-        """
-        states = {}
-        for id in self.services:
-            states[id] = self.get_service_state(id)
-        return states
 
     def __get_service_by_id(self, id) -> Service:
         """Internal helper to retrieve a service object by ID.

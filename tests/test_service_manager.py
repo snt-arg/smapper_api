@@ -5,7 +5,7 @@ from app.core.services import ServiceState
 from app.core.service_manager import ServiceManager
 from app.core.services.service import Service
 from app.exceptions import ServiceException, ServiceManagerException
-from app.schemas.services import ServiceSchema
+from app.schemas.services import ServiceConfigSchema
 
 
 class TestServiceManager(unittest.TestCase):
@@ -13,11 +13,11 @@ class TestServiceManager(unittest.TestCase):
     def setUp(self):
         """Setup a fresh instance of ServiceManager for each test"""
         self.manager = ServiceManager()
-        self.service_schema_1 = ServiceSchema(
+        self.service_schema_1 = ServiceConfigSchema(
             name="Test 1", id="test_service_1", srv_type="SERVICE", cmd="sleep 0.1"
         )
 
-        self.service_schema_2 = ServiceSchema(
+        self.service_schema_2 = ServiceConfigSchema(
             name="Test 2", id="test_service_2", srv_type="SERVICE", cmd="sleep 0.3"
         )
 

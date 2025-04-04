@@ -1,11 +1,15 @@
 from typing import Annotated, List
 from fastapi import APIRouter, Depends
-from app.config.settings import DeviceSettings
+from app.settings import DeviceSettings
 from app.core.service_manager import (
     ServiceManager,
 )
 from app.dependencies import get_device_settings, get_service_manager
-from app.schemas.services import RosServiceSchema, ServiceSchema, ServiceStateSchema
+from app.schemas.services import (
+    RosServiceConfigSchema,
+    ServiceConfigSchema,
+    ServiceSchema,
+)
 
 
 router = APIRouter(prefix="/api/v1")
@@ -16,9 +20,9 @@ router = APIRouter(prefix="/api/v1")
     description="Get a list of all configured services, including both standard and ROS-based services.",
 )
 def get_services(
-    config: Annotated[DeviceSettings, Depends(get_device_settings)],
-) -> List[ServiceSchema | RosServiceSchema]:
-    return config.services
+    manager: Annotated[ServiceManager, Depends(get_service_manager)],
+) -> List[ServiceSchema]:
+    return manager.get_services()
 
 
 @router.get(
@@ -32,18 +36,6 @@ def get_service_by_id(
     return manager.get_service_by_id(id)
 
 
-@router.get(
-    "/services/{id}/state",
-    description="Get the current runtime state (e.g., ACTIVE, INACTIVE, FAILURE) of a specific service.",
-)
-def get_service_state_by_id(
-    id: str,
-    manager: Annotated[ServiceManager, Depends(get_service_manager)],
-) -> ServiceStateSchema:
-    state = manager.get_service_state(id)
-    return ServiceStateSchema(state=state.name)
-
-
 @router.post(
     "/services/{id}/start",
     description="Start the specified service by its ID. Returns the updated state after starting.",
@@ -51,10 +43,9 @@ def get_service_state_by_id(
 def start_service_with_id(
     id: str,
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
-) -> ServiceStateSchema:
+) -> ServiceSchema:
     manager.start_service(id)
-    state = manager.get_service_state(id)
-    return ServiceStateSchema(state=state.name)
+    return manager.get_service_by_id(id)
 
 
 @router.post(
@@ -64,7 +55,6 @@ def start_service_with_id(
 def stop_service_with_id(
     id: str,
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
-) -> ServiceStateSchema:
+) -> ServiceSchema:
     manager.stop_service(id)
-    state = manager.get_service_state(id)
-    return ServiceStateSchema(state=state.name)
+    return manager.get_service_by_id(id)
