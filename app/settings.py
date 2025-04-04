@@ -8,7 +8,12 @@ from pydantic_settings import (
     YamlConfigSettingsSource,
 )
 
-from app.schemas import ServiceSchema, RosServiceSchema, SensorSchema, OnboardPCSchema
+from app.schemas import (
+    ServiceConfigSchema,
+    RosServiceConfigSchema,
+    SensorSchema,
+    OnboardPCSchema,
+)
 
 
 class APISettings(BaseSettings):
@@ -51,14 +56,13 @@ class RosSchema(BaseModel):
 
 
 class DeviceSettings(BaseSettings):
-    services: list[ServiceSchema | RosServiceSchema] = Field(default=[])
+    services: list[ServiceConfigSchema | RosServiceConfigSchema] = Field(default=[])
     sensors: list[SensorSchema] = Field(default=[])
     onboard_pc: OnboardPCSchema = Field(
         default=OnboardPCSchema(model="Jetson AGX Orin Development Kit")
     )
     revision: str = Field(default="1.0")
     device_name: str = Field(default="smapper")
-    autostart_services: bool = Field(default=False)
     bags_storage_path: str = Field(default="")
     ros: RosSchema = Field(default=RosSchema(topics_to_monitor=[]))
 
