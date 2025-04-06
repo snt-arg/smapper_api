@@ -26,6 +26,12 @@ class RosbagMetadataCreate(RosbagMetadataBase):
     rosbag_path: str
 
 
+class RosbagMetadataUpdate(BaseModel):
+    name: Optional[str] = None
+    detail: Optional[str] = None
+    tags: Optional[str] = None
+
+
 class RosbagMetadata(RosbagMetadataBase):
     id: int
     topics: List[RosbagTopic] = []

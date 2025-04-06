@@ -2,11 +2,11 @@ from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.schemas.rosbag import RosbagMetadata
+from app.schemas.rosbag import RosbagMetadata, RosbagMetadataUpdate
 from app.crud import rosbag as crud
 
 
-router = APIRouter(prefix="/api/v1/bags")
+router = APIRouter(prefix="/api/v1/rosbags")
 
 
 @router.get(
@@ -18,7 +18,7 @@ def read_bags(db: Annotated[Session, Depends(get_db)]):
     return crud.get_rosbags(db)
 
 
-@router.get("/rosbags/{rosbag_id}", response_model=RosbagMetadata)
+@router.get("/{rosbag_id}", response_model=RosbagMetadata)
 def read_rosbag(rosbag_id: int, db: Annotated[Session, Depends(get_db)]):
     rosbag = crud.get_rosbag(db, rosbag_id)
     if not rosbag:
@@ -26,9 +26,11 @@ def read_rosbag(rosbag_id: int, db: Annotated[Session, Depends(get_db)]):
     return rosbag
 
 
-@router.put("/rosbags/{rosbag_id}", response_model=RosbagMetadata)
+@router.put("/{rosbag_id}", response_model=RosbagMetadata)
 def update_rosbag_route(
-    rosbag_id: int, update_data: dict, db: Annotated[Session, Depends(get_db)]
+    rosbag_id: int,
+    update_data: RosbagMetadataUpdate,
+    db: Annotated[Session, Depends(get_db)],
 ):
     updated = crud.update_rosbag(db, rosbag_id, update_data)
     if not updated:
@@ -36,7 +38,7 @@ def update_rosbag_route(
     return updated
 
 
-@router.delete("/rosbags/{rosbag_id}")
+@router.delete("/{rosbag_id}")
 def delete_rosbag_route(rosbag_id: int, db: Annotated[Session, Depends(get_db)]):
     deleted = crud.delete_rosbag(db, rosbag_id)
     if not deleted:

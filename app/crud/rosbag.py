@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy.orm import Session
 from app.models.rosbag_metadata import RosbagMetadata
 from app.models.rosbag_topic import RosbagTopic
-from app.schemas.rosbag import RosbagMetadataCreate
+from app.schemas.rosbag import RosbagMetadataCreate, RosbagMetadataUpdate
 
 
 def create_rosbag(db: Session, rosbag: RosbagMetadataCreate) -> RosbagMetadata:
@@ -30,13 +30,16 @@ def get_rosbag(db: Session, rosbag_id: int) -> RosbagMetadata | None:
 
 
 def update_rosbag(
-    db: Session, rosbag_id: int, update_data: dict
+    db: Session, rosbag_id: int, update_data: RosbagMetadataUpdate
 ) -> RosbagMetadata | None:
     rosbag = get_rosbag(db, rosbag_id)
     if not rosbag:
         return None
-    for key, value in update_data.items():
+
+    update_fields = update_data.model_dump(exclude_unset=True)
+    for key, value in update_fields.items():
         setattr(rosbag, key, value)
+
     db.commit()
     db.refresh(rosbag)
     return rosbag
