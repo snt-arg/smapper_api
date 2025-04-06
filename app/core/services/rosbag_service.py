@@ -28,4 +28,6 @@ class RosbagService(Service):
             name="Rosbag Service",
             id="rosbag_service",
             cmd=cmd,
+            auto_start=False,
+            restart_on_failure=False,
         )
