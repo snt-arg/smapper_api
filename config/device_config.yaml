@@ -1,6 +1,6 @@
 device_name: SMapper
 revision: "2.1"
-bags_storage_path: "/home/pedros/rosbox_shared/BagStorage/"
+bags_storage_path: "$HOME/BagStorage/"
 
 onboard_pc:
   model: Jetson AGX Orin Development Kit
@@ -48,7 +48,7 @@ services:
 
   - id: dev_docs
     name: Device Documentation
-    auto_start: true
+    auto_start: false
     restart_on_failure: false
     cwd: "/home/pedros/rosbox_shared/smapper/"
     cmd: "docker run --rm -p 8080:8000 -v ${PWD}:/docs squidfunk/mkdocs-material"

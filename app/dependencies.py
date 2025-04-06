@@ -1,9 +1,9 @@
 from functools import lru_cache
 
+from app.core.recording_manager import RecordingManager
 from app.settings import APISettings, AppSettings, DeviceSettings
 from app.core.ros.ros_factory import create_topic_monitor_runner
 from app.core.service_manager import ServiceManager
-from app.core.bag_manager import BagRecordingManager
 from app.logger import logger
 from typing import TYPE_CHECKING, Optional
 
@@ -59,18 +59,18 @@ def get_service_manager() -> ServiceManager:
     return manager
 
 
-@lru_cache()
-def get_bag_manager() -> BagRecordingManager:
-    """Get a singleton instance of the BagManager.
-
-    Initializes the manager using the configured storage path from device settings.
-
-    Returns:
-        BagManager: Manages ROS bag recordings.
-    """
-    logger.debug("Get bag manager dependency called")
-    manager = BagRecordingManager(get_device_settings().bags_storage_path)
-    return manager
+# @lru_cache()
+# def get_bag_manager() -> BagRecordingManager:
+#     """Get a singleton instance of the BagManager.
+#
+#     Initializes the manager using the configured storage path from device settings.
+#
+#     Returns:
+#         BagManager: Manages ROS bag recordings.
+#     """
+#     logger.debug("Get bag manager dependency called")
+#     manager = BagRecordingManager(get_device_settings().bags_storage_path)
+#     return manager
 
 
 @lru_cache()
@@ -91,3 +91,17 @@ def get_topic_monitor_runner() -> Optional["TopicMonitorRunner"]:
         return runner
     except RuntimeError:
         return None
+
+
+@lru_cache()
+def get_recording_manager() -> RecordingManager:
+    """Get a singleton instance of the RecordingManager.
+
+    Initializes the manager using the configured storage path from device settings.
+
+    Returns:
+        BagManager: Manages ROS bag recordings.
+    """
+    logger.debug("Get recording manager dependency called")
+    manager = RecordingManager(get_device_settings().bags_storage_path)
+    return manager

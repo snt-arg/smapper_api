@@ -1,72 +1,44 @@
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
-from app.core.bag_manager import BagRecordingManager
-from app.dependencies import get_bag_manager
-from app.exceptions import BagNotFoundException
-from app.schemas import BagSchema, BagRecordingRequestSchema, BagCreationResponse
-from app.schemas.bags import RecordingStatus
+from sqlalchemy.orm import Session
+from app.db.database import get_db
+from app.schemas.rosbag import RosbagMetadata
+from app.crud import rosbag as crud
 
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter(prefix="/api/v1/bags")
 
 
 @router.get(
-    "/bags",
+    "/",
     description="Return a list of all available bag recordings with associated metadata.",
+    response_model=List[RosbagMetadata],
 )
-def get_bags(
-    bag_manager: Annotated[BagRecordingManager, Depends(get_bag_manager)],
-) -> List[BagSchema]:
-    return bag_manager.get_bags()
+def read_bags(db: Annotated[Session, Depends(get_db)]):
+    return crud.get_rosbags(db)
 
 
-@router.get(
-    "/bags/{id}",
-    description="Fetch detailed information about a specific bag by its ID.",
-)
-def get_bag_by_id(
-    id: str, bag_manager: Annotated[BagRecordingManager, Depends(get_bag_manager)]
-) -> BagSchema:
-    try:
-        bag = bag_manager.get_bag_by_id(id)
-    except BagNotFoundException as e:
-        raise HTTPException(404, e.detail)
-
-    return bag
+@router.get("/rosbags/{rosbag_id}", response_model=RosbagMetadata)
+def read_rosbag(rosbag_id: int, db: Annotated[Session, Depends(get_db)]):
+    rosbag = crud.get_rosbag(db, rosbag_id)
+    if not rosbag:
+        raise HTTPException(status_code=404, detail="Rosbag not found")
+    return rosbag
 
 
-@router.post(
-    "/bags/record/start",
-    description="Start a new rosbag recording session for the selected topics.",
-)
-def create_bag(
-    request: BagRecordingRequestSchema,
-    bag_manager: Annotated[BagRecordingManager, Depends(get_bag_manager)],
-) -> BagCreationResponse:
-    return bag_manager.create_bag(request)
+@router.put("/rosbags/{rosbag_id}", response_model=RosbagMetadata)
+def update_rosbag_route(
+    rosbag_id: int, update_data: dict, db: Annotated[Session, Depends(get_db)]
+):
+    updated = crud.update_rosbag(db, rosbag_id, update_data)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Rosbag not found")
+    return updated
 
 
-@router.post(
-    "/bags/record/stop",
-    description="Stop the currently running rosbag recording session.",
-)
-def stop_bag_recording(
-    bag_manager: Annotated[BagRecordingManager, Depends(get_bag_manager)],
-) -> BagSchema:
-    try:
-        bag_schema = bag_manager.stop_bag_recording()
-    except Exception as e:
-        raise HTTPException(status_code=404, detail=f"{e}")
-
-    return bag_schema
-
-
-@router.get(
-    "/bags/record/state",
-    description="Get the current state of the rosbag recording service.",
-)
-def get_bag_recording_state(
-    bag_manager: Annotated[BagRecordingManager, Depends(get_bag_manager)],
-) -> RecordingStatus:
-    state = bag_manager.get_recording_state()
-    return RecordingStatus(status=state.name)
+@router.delete("/rosbags/{rosbag_id}")
+def delete_rosbag_route(rosbag_id: int, db: Annotated[Session, Depends(get_db)]):
+    deleted = crud.delete_rosbag(db, rosbag_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Rosbag not found")
+    return {"message": "Deleted"}

@@ -26,7 +26,6 @@ def get_ros_topics(
                     name=name,
                     msg_type=state.msg_type,
                     hz=state.hz,
-                    message_count=state.message_count,
                     status=state.status.value,
                 )
             )

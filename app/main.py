@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.db.database import create_db
 from app.lifespan import lifespan
 from app.dependencies import get_api_settings
 from app.exceptions import init_exception_handlers
@@ -10,7 +11,10 @@ from app.routers.v1 import (
     power_router,
     services_router,
     ros_router,
+    recordings_router,
 )
+
+create_db()
 
 # Get settings loaded from configuration file
 api_settings = get_api_settings()
@@ -33,6 +37,7 @@ app.include_router(services_router)
 app.include_router(bags_router)
 app.include_router(power_router)
 app.include_router(ros_router)
+app.include_router(recordings_router)
 
 # Setup CORS Middleware.
 app.add_middleware(
