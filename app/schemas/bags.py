@@ -1,6 +1,6 @@
 from typing import List, Optional
 from pydantic import BaseModel
-from .ros import TopicSchema
+from .ros import Topic
 
 
 class RecordingStatus(BaseModel):
@@ -20,7 +20,7 @@ class MinimalRosbagMetadata(BaseModel):
 
     duration: float
     unix_timestamp: float
-    topics: List[TopicSchema]
+    topics: List[Topic]
     message_count: int
     db_path: str
 
