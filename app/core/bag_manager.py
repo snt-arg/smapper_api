@@ -1,3 +1,4 @@
+import sqlite3
 import datetime
 import os
 import base62
@@ -14,7 +15,7 @@ from app.schemas.bags import (
     BagRecordingRequestSchema,
     RosbagMetadata,
 )
-from app.schemas.ros import TopicSchema
+from app.schemas.ros import Topic
 from app.exceptions import (
     BagNotFoundException,
     BagRecordingOnGoingException,
@@ -22,7 +23,101 @@ from app.exceptions import (
 from app.logger import logger
 
 
-class BagManager:
+"""
+    id
+    name: str
+    size: str (bytes)?
+    duration: nanoseconds
+    start_time: unix_timestamp
+    end_time: unix_timestamp
+    detail: str
+    tags: list[str]
+    topics: list[Topic(name, msg_type)]
+    rosbag_path: str
+    db_path: relative_path to rosbag_path
+"""
+
+
+class DatabaseManager:
+    def __init__(self, db_path: str) -> None:
+        self._db_conn = sqlite3.connect(db_path)
+        self._db_cursor = self._db_conn.cursor()
+
+        self._create_tables()
+
+    def _create_tables(self):
+        self._db_cursor.execute(
+            """CREATE TABLE IF NOT EXISTS rosbag_metadata (
+                       id INTEGER PRIMARY KEY,
+                       name TEXT NOT NULL,
+                       size INTEGER,
+                       duration INTEGER,
+                       start_time INTEGER,
+                       end_time INTEGER,
+                       detail TEXT,
+                       tags TEXT,
+                       rosbag_path TEXT NOT NULL,
+                       db_path TEXT NOT NULL);"""
+        )
+
+        self._db_cursor.execute(
+            """CREATE TABLE IF NOT EXISTS rosbag_topics (
+                               id INTEGER PRIMARY KEY,
+                               rosbag_id INTEGER,
+                               topic_name TEXT NOT NULL,
+                               msg_type TEXT NOT NULL,
+                               FOREIGN KEY (rosbag_id) REFERENCES rosbag_metadata(id));"""
+        )
+
+        self._db_conn.commit()
+
+    def create(self, data: BagSchema) -> None:
+        # Insert the main metadata into rosbag_metadata
+        self._db_cursor.execute(
+            """INSERT INTO rosbag_metadata (name, size, duration, start_time, end_time, detail, tags, rosbag_path, db_path)
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                data.name,
+                data.bag_size,
+                data.rosbag_metadata.duration,
+                data.rosbag_metadata.unix_timestamp,
+                0,
+                data.detail,
+                ",".join(data.tags if data.tags else []),
+                "",
+                "",
+            ),
+        )
+
+        rosbag_id = (
+            self._db_cursor.lastrowid
+        )  # Get the ID of the inserted Rosbag record
+
+        # Insert topics into rosbag_topics
+        for topic in data.rosbag_metadata.topics:
+            self._db_cursor.execute(
+                """INSERT INTO rosbag_topics (rosbag_id, topic_name, msg_type)
+                                   VALUES (?, ?, ?)""",
+                (rosbag_id, topic.name, topic.msg_type),
+            )
+
+        self._db_conn.commit()
+
+    def read(self) -> None:
+        self._db_cursor.execute("""SELECT * FROM rosbag_metadata""")
+        rosbags = self._db_cursor.fetchall()
+
+        logger.info(f"{rosbags}")
+        pass
+
+    def update(self, data: BagRecordingRequestSchema) -> None:
+        pass
+
+    def remove(self, data: BagRecordingRequestSchema) -> None:
+        pass
+
+
+class BagRecordingManager:
     """Manages ROS2 bag recordings: creating, storing, reading, and stopping recordings."""
 
     bags: Dict[str, BagSchema] = {}
@@ -36,6 +131,10 @@ class BagManager:
         Args:
             storage_path: Path to the directory where rosbag data will be stored.
         """
+
+        self._db_manager = DatabaseManager("./rosbag_manager.db")
+        logger.info("Initialized DB")
+
         storage_path = os.path.expandvars(storage_path)
         if not os.path.exists(storage_path):
             self._create_storage_dir(storage_path)
@@ -74,6 +173,23 @@ class BagManager:
         if self.rosbag_service and self.rosbag_service.is_running():
             raise BagRecordingOnGoingException()
 
+        self._db_manager.create(
+            BagSchema(
+                id="1",
+                name="Test",
+                bag_size="45gb",
+                detail="",
+                tags=["test", "bag"],
+                rosbag_metadata=MinimalRosbagMetadata(
+                    duration=12342,
+                    unix_timestamp=12341234,
+                    topics=[Topic(name="a topic", msg_type="/std_msgs/msg")],
+                    db_path="asdasd",
+                    message_count=234,
+                ),
+            )
+        )
+
         bag_id = self.__generate_bag_id()
         bag_name = self.__generate_bag_name(bag_id, request.name)
 
@@ -111,6 +227,7 @@ class BagManager:
 
     def get_bags(self) -> List[BagSchema]:
         """Return a list of all stored bag schemas."""
+        self._db_manager.read()
         return [bag for _, bag in self.bags.items()]
 
     def get_bag_by_id(self, id: str) -> BagSchema:
@@ -157,19 +274,16 @@ class BagManager:
 
         metadata = metadata["rosbag2_bagfile_information"]
 
-        topics: List[TopicSchema] = []
+        topics: List[Topic] = []
         for topic in metadata["topics_with_message_count"]:
             topic_metadata = topic["topic_metadata"]
             name = topic_metadata["name"]
             msg_type = topic_metadata["type"]
             message_count = topic["message_count"]
             topics.append(
-                TopicSchema(
+                Topic(
                     name=name,
                     msg_type=msg_type,
-                    message_count=message_count,
-                    hz=0,
-                    status="UNDEFINED",
                 )
             )
 
