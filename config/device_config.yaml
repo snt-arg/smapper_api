@@ -22,8 +22,8 @@ sensors:
     service_id: realsense_service
 
 services:
-  - name: OusterROS
-    id: lidar_service
+  - name: Ouster LiDAR
+    id: lidar_srv
     auto_start: false
     restart_on_failure: false
     exec_type: "LAUNCH"
@@ -34,8 +34,8 @@ services:
     env:
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
 
-  - name: Argus Cameras
-    id: argus_cam_service
+  - name: Argus Cameras (4x)
+    id: cameras_srv
     auto_start: false
     restart_on_failure: false
     exec_type: "LAUNCH"
@@ -46,8 +46,8 @@ services:
     env:
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
 
-  - name: Device Documentation
-    id: dev_docs
+  - name: Device Documentation (MkDocs)
+    id: docs_srv
     auto_start: false
     restart_on_failure: false
     cwd: "/home/pedros/rosbox_shared/smapper/"
