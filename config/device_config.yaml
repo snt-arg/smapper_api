@@ -22,8 +22,8 @@ sensors:
     service_id: realsense_service
 
 services:
-  - id: lidar_service
-    name: OusterROS
+  - name: OusterROS
+    id: lidar_service
     auto_start: false
     restart_on_failure: false
     exec_type: "LAUNCH"
@@ -34,8 +34,8 @@ services:
     env:
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
 
-  - id: argus_cam_service
-    name: Argus Cameras
+  - name: Argus Cameras
+    id: argus_cam_service
     auto_start: false
     restart_on_failure: false
     exec_type: "LAUNCH"
@@ -46,22 +46,12 @@ services:
     env:
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
 
-  - id: dev_docs
-    name: Device Documentation
+  - name: Device Documentation
+    id: dev_docs
     auto_start: false
     restart_on_failure: false
     cwd: "/home/pedros/rosbox_shared/smapper/"
     cmd: "docker run --rm -p 8080:8000 -v ${PWD}:/docs squidfunk/mkdocs-material"
-
-  # - name: Realsense Camera
-  #   id: realsense_service
-  #   exec_type: "LAUNCH"
-  #   ros_distro: humble
-  #   ws: "$HOME/smapper/software/ros_ws"
-  #   pkg_name: "smapper_bringup"
-  #   exec: "realsense.launch.py"
-  #   env:
-  #      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
 
 ros:
   topics_to_monitor:
