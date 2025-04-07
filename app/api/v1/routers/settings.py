@@ -5,7 +5,7 @@ from app.core.exceptions import NotYetImplementedException
 router = APIRouter(prefix="/api/v1/settings")
 
 
-@router.post(
+@router.get(
     "/",
     description="Get a list of available settings",
     tags=["settings"],
