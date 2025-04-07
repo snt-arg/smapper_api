@@ -19,7 +19,6 @@ class ServiceManager:
 
     def __init__(self):
         """Initialize the service manager and start a background polling thread."""
-
         logger.info("Initializing Service Manager")
 
         self.services: dict[str, Service] = {}
@@ -30,6 +29,10 @@ class ServiceManager:
         )
         self.lock = threading.Lock()
         self._poll_thread.start()
+
+    def terminate(self):
+        logger.info("Terminating Service Manager")
+        self.stop_all()
 
     def add_service(
         self, service: ServiceConfigSchema | RosServiceConfigSchema
