@@ -20,6 +20,8 @@ class ServiceManager:
     def __init__(self):
         """Initialize the service manager and start a background polling thread."""
 
+        logger.info("Initializing Service Manager")
+
         self.services: dict[str, Service] = {}
         self._poll_thread = threading.Thread(
             target=self._poll_services_cb,
@@ -40,10 +42,10 @@ class ServiceManager:
         Returns:
             True if added successfully, False if a service with the same ID already exists.
         """
-        print(service)
         if self.services.get(service.id):
             logger.error(f"A Service with id: {id} already exists")
             return False
+        logger.info(f"Adding a new service to be managed. Service id -> {service.id}")
         if isinstance(service, ServiceConfigSchema):
             self.services[service.id] = Service(**service.model_dump())
         else:
@@ -63,6 +65,7 @@ class ServiceManager:
         if self.services.get(id):
             logger.error(f"A Service with id: {id} does not exist")
             return False
+        logger.info(f"Removing service to be managed. Service id -> {id}")
         self.stop_service(id)
         self.services.pop(id)
 
@@ -71,6 +74,7 @@ class ServiceManager:
     def remove_all_services(self) -> None:
         """Stop and remove all services from the manager."""
 
+        logger.info("Removing all services from being managed.")
         self.stop_all()
         self.services.clear()
 
@@ -79,6 +83,8 @@ class ServiceManager:
 
         Ignores and continues on failure.
         """
+
+        logger.info("Starting all services")
         for _, service in self.services.items():
             try:
                 service.start()
@@ -90,6 +96,8 @@ class ServiceManager:
 
         Logs errors but continues stopping others.
         """
+
+        logger.info("Stopping all services")
         for id, service in self.services.items():
             try:
                 service.stop()
@@ -101,6 +109,8 @@ class ServiceManager:
 
         Logs errors but continues restarting others.
         """
+
+        logger.info("Restarting all services")
         for id, service in self.services.items():
             try:
                 service.restart()
@@ -116,7 +126,9 @@ class ServiceManager:
         Raises:
             ServiceManagerException: If the service does not exist.
         """
+
         service = self._get_service(id)
+        logger.info(f"Starting service with id {id}")
         service.start()
 
     def stop_service(self, id: str) -> None:
@@ -129,6 +141,7 @@ class ServiceManager:
             ServiceManagerException: If the service does not exist.
         """
         service = self._get_service(id)
+        logger.info(f"Stopping service with id {id}")
         service.stop()
 
     def restart_service(self, id: str) -> None:
@@ -141,6 +154,7 @@ class ServiceManager:
             ServiceManagerException: If the service does not exist.
         """
         service = self._get_service(id)
+        logger.info(f"Restarting service with id {id}")
         service.restart()
 
     def get_services(self) -> List[ServiceStatus]:
