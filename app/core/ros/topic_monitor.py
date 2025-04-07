@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 import importlib
 import time
 from app.logging import logger
+from app.schemas.ros.topic import TopicStatus as TopicStatusSchema
 
 import rclpy
 from rclpy.node import Node, Subscription
@@ -82,13 +83,32 @@ class TopicMonitor(Node):
 
         logger.info("Topic Monitor initialized")
 
-    def get_topic_states(self) -> Dict[str, TopicState]:
+    def get_topic(self, name) -> TopicStatusSchema | None:
+        state = self._topic_states.get(name)
+        if state:
+            return TopicStatusSchema(
+                name=name,
+                msg_type=state.msg_type,
+                hz=state.hz,
+                status=state.status.value,
+            )
+        return None
+
+    def get_topics(self) -> List[TopicStatusSchema]:
         """Return the current states of all monitored topics.
 
         Returns:
             A dictionary mapping topic names to their respective TopicState instances.
         """
-        return self._topic_states
+        return [
+            TopicStatusSchema(
+                name=name,
+                msg_type=state.msg_type,
+                hz=state.hz,
+                status=state.status.value,
+            )
+            for name, state in self._topic_states.items()
+        ]
 
     def add_topic_to_monitor(self, topic: str) -> None:
         """Add a single topic to the set of topics to monitor.
@@ -300,15 +320,15 @@ class TopicMonitorRunner:
             self._thread.join()
         rclpy.try_shutdown()
 
-    def get_all_topic_states(self) -> Dict[str, TopicState]:
+    def get_topics(self) -> List[TopicStatusSchema]:
         """Retrieve the states of all monitored topics.
 
         Returns:
             A dictionary mapping topic names to TopicState instances.
         """
-        return self._node.get_topic_states()
+        return self._node.get_topics()
 
-    def get_topic_state(self, topic_name: str) -> TopicState | None:
+    def get_topic(self, topic_name: str) -> TopicStatusSchema | None:
         """Retrieve the state of a specific topic.
 
         Args:
@@ -317,7 +337,7 @@ class TopicMonitorRunner:
         Returns:
             The TopicState for the given topic, or None if not found.
         """
-        return self._node.get_topic_states().get(topic_name)
+        return self._node.get_topic(topic_name)
 
     def add_topic_to_monitor(self, topic: str) -> None:
         """Add a single topic to be monitored.
