@@ -95,12 +95,9 @@ class Service:
             and self._state is ServiceState.ACTIVE
             and not restart
         ):
-            # FIX: Modify ServiceException to have cmd, stderr as optional, possibly removing cmd completly
             raise ServiceException(
                 self._id,
-                "Service is already running and restart was not specified.",
-                self._cmd,
-                "",
+                "Service is already running.",
             )
         logger.info(f"[service:{self._id}] Create service process")
 
@@ -122,7 +119,6 @@ class Service:
             raise ServiceException(
                 self._id,
                 f"[service:{self._id}] Failed to start service",
-                self._cmd,
                 str(e),
             )
 
@@ -141,7 +137,10 @@ class Service:
             logger.info(
                 f"[service:{self._id}] Service is not ACTIVE. Ignoring request."
             )
-            return
+            raise ServiceException(
+                self._id,
+                "Service is not running.",
+            )
 
         self._terminate_child_processes(timeout)
 
@@ -229,7 +228,6 @@ class Service:
                 f"[service:{self._id}] Process has terminated with error -> {self._failure_reason.__repr__()}"
             )
 
-        # NOTE: consider a way to notify caller to Service in case of failure
         if self._restart_on_failure and self._max_restart_attempts > 0:
             self._max_restart_attempts -= 1
             logger.info(f"[service:{self._id}] Restarting service after failure.")

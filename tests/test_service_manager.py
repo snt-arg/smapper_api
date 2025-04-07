@@ -125,7 +125,7 @@ class TestServiceManager(unittest.TestCase):
 
     @patch(
         "app.core.services.Service.start",
-        side_effect=ServiceException("dummy_id", "Failed to start", "no cmd", ""),
+        side_effect=ServiceException("dummy_id", "Failed to start"),
     )
     def test_start_service_failure(self, mock_start):
         """Test handling failure when starting a service"""
@@ -136,7 +136,7 @@ class TestServiceManager(unittest.TestCase):
 
     @patch(
         "app.core.services.Service.stop",
-        side_effect=ServiceException("dummy_id", "Failed to stop", "no cmd", ""),
+        side_effect=ServiceException("dummy_id", "Failed to stop"),
     )
     def test_stop_service_failure(self, mock_stop):
         """Test handling failure when stopping a service"""

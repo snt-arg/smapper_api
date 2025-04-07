@@ -1,5 +1,6 @@
 from typing import Annotated, List
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from app.core.exceptions import ServiceException, ServiceManagerException
 from app.core.managers import (
     ServiceManager,
 )
@@ -32,7 +33,10 @@ def get_service_by_id(
     id: str,
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
 ) -> ServiceStatus:
-    return manager.get_service(id)
+    try:
+        return manager.get_service(id)
+    except ServiceManagerException as e:
+        raise HTTPException(status_code=404, detail="Service Not Found")
 
 
 @router.post(
@@ -44,7 +48,11 @@ def start_service_with_id(
     id: str,
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
 ) -> ServiceStatus:
-    manager.start_service(id)
+    try:
+        manager.start_service(id)
+    except ServiceManagerException as e:
+        raise HTTPException(status_code=404, detail="Service Not Found")
+
     return manager.get_service(id)
 
 
@@ -57,5 +65,9 @@ def stop_service_with_id(
     id: str,
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
 ) -> ServiceStatus:
-    manager.stop_service(id)
+    try:
+        manager.stop_service(id)
+    except ServiceManagerException as e:
+        raise HTTPException(status_code=404, detail="Service Not Found")
+
     return manager.get_service(id)
