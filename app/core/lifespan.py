@@ -3,10 +3,10 @@ from typing import Annotated
 from typing_extensions import runtime
 
 from fastapi import Depends, FastAPI
-from app.core.service_manager import ServiceManager
-from app.settings import DeviceSettings
-from app.logger import logger
-from app.dependencies import (
+from app.core.managers import ServiceManager
+from app.config.settings import DeviceSettings
+from app.logging import logger
+from app.di import (
     get_device_settings,
     get_recording_manager,
     get_topic_monitor_runner,
@@ -24,20 +24,8 @@ def init_services(
         service_manager: The service manager instance used to register services.
         config: The loaded device configuration, which includes the list of services to register.
     """
-    logger.info("Setting up services")
     for service in config.services:
         service_manager.add_service(service)
-
-
-def terminate_services(
-    service_manager: Annotated[ServiceManager, Depends(get_service_manager)],
-) -> None:
-    """Stop all registered services on application shutdown.
-
-    Args:
-        service_manager: The service manager responsible for running services.
-    """
-    service_manager.stop_all()
 
 
 @asynccontextmanager
@@ -58,6 +46,7 @@ async def lifespan(app: FastAPI):
     Yields:
         Control back to FastAPI's event loop during application runtime.
     """
+    logger.info("Initializing Application")
     # Executed on startup
     service_manager = get_service_manager()
     recording_manager = get_recording_manager()
@@ -69,10 +58,11 @@ async def lifespan(app: FastAPI):
         topic_monitor_runner.start()
 
     yield
+    logger.info("Terminating Application")
 
     # Executed on shutdown
-    terminate_services(service_manager)
+    service_manager.terminate()
+    recording_manager.terminate()
+
     if topic_monitor_runner:
         topic_monitor_runner.stop()
-
-    recording_manager.terminate()

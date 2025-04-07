@@ -6,23 +6,9 @@ import subprocess
 from typing import Dict, Optional
 
 
-from pydantic import BaseModel
-from app.logger import logger
-from app.exceptions import ServiceException
-from app.schemas.services import ServiceSchema
-
-
-# NOTE: this can be considered a schema
-class ServiceFailure(BaseModel):
-    """Data model capturing details of a service failure.
-
-    Attributes:
-        ret_code: The return code from the failed process.
-        std_err: The standard error output from the process.
-    """
-
-    ret_code: int
-    std_err: str
+from app.logging import logger
+from app.core.exceptions import ServiceException
+from app.schemas.service import ServiceFailure, ServiceStatus
 
 
 class ServiceState(Enum):
@@ -57,7 +43,7 @@ class Service:
 
     _process: Optional[psutil.Popen]
     _state: ServiceState
-    _failure_reason: Optional[ServiceFailure]
+    _failure_reason: Optional[ServiceFailure] = None
     # TODO: expose this to a service setting
     _max_restart_attempts: int = 5
 
@@ -88,7 +74,7 @@ class Service:
         self._auto_start = auto_start
         self._restart_on_failure = restart_on_failure
         self._env = {**env, **os.environ} if env else {**os.environ}
-        self._cwd = cwd or os.path.curdir
+        self._cwd = os.path.expandvars(cwd) if cwd else os.path.curdir
 
         self._state = ServiceState.INACTIVE
         self._process = None
@@ -187,9 +173,13 @@ class Service:
         """Return the current state of the service."""
         return self._state
 
-    def get_schema(self) -> ServiceSchema:
-        """Return a structured representation (schema) of the service configuration."""
-        return ServiceSchema(id=self._id, name=self._name, state=self.get_state().value)
+    def get_status(self) -> ServiceStatus:
+        return ServiceStatus(
+            id=self._id,
+            name=self._name,
+            state=self.get_state().value,
+            failure=self._failure_reason,
+        )
 
     def is_running(self) -> bool:
         """Check whether the service is currently running and marked ACTIVE."""

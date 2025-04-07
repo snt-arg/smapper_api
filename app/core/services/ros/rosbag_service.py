@@ -1,7 +1,7 @@
-from typing import List, Optional
 import os
+from typing import List
 
-from .service import Service
+from app.core.services import Service
 
 
 class RosbagService(Service):

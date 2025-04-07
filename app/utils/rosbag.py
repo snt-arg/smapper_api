@@ -3,8 +3,8 @@ from typing import List
 import yaml
 import datetime
 
-from app.schemas.bags import MinimalRosbagMetadata
-from app.schemas.ros import Topic
+from app.schemas.ros.rosbag import RosbagFileMetadata
+from app.schemas.ros.topic import TopicBase
 
 
 def get_rosbag_db_path(path: str) -> str:
@@ -50,7 +50,7 @@ def create_rosbag_name_with_date(name: str, epoch_time: float) -> str:
     return name + "_" + formatted_time
 
 
-def read_rosbag_metadata(path: str) -> MinimalRosbagMetadata:
+def read_rosbag_metadata(path: str) -> RosbagFileMetadata:
     """Read metadata from a rosbag folder.
 
     Args:
@@ -65,20 +65,20 @@ def read_rosbag_metadata(path: str) -> MinimalRosbagMetadata:
 
     metadata = metadata["rosbag2_bagfile_information"]
 
-    topics: List[Topic] = []
+    topics: List[TopicBase] = []
     for topic in metadata["topics_with_message_count"]:
         topic_metadata = topic["topic_metadata"]
         name = topic_metadata["name"]
         msg_type = topic_metadata["type"]
         message_count = topic["message_count"]
         topics.append(
-            Topic(
+            TopicBase(
                 name=name,
                 msg_type=msg_type,
             )
         )
 
-    return MinimalRosbagMetadata(
+    return RosbagFileMetadata(
         duration=metadata["duration"]["nanoseconds"],
         start_time=metadata["starting_time"]["nanoseconds_since_epoch"],
         topics=topics,

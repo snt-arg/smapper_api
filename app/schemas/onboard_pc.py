@@ -1,11 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class OnboardPCSchema(BaseModel):
-    """Schema representing metadata about the onboard PC.
+    """Schema representing metadata about the onboard PC."""
 
-    Attributes:
-        model: The model name or identifier of the onboard PC.
-    """
-
-    model: str
+    model: str = Field(description="The model name or identifier of the onboard PC.")

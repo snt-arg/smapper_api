@@ -22,13 +22,14 @@ field_styles = dict(
     name=dict(color="blue"),
     programname=dict(color="cyan"),
     username=dict(color="yellow"),
+    filename=dict(color="cyan"),
 )
 
 logger = logging.getLogger("smapper_api")
 coloredlogs.install(
     level=LOG_LEVEL,
     logger=logger,
-    fmt="%(levelname)s: %(message)s",
+    fmt="%(levelname)s [%(filename)s]: \t %(message)s",
     level_styles=level_styles,
     field_styles=field_styles,
 )

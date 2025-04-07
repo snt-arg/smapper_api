@@ -1,10 +1,9 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
-from app.core.recording_manager import RecordingManager
-from app.dependencies import get_recording_manager
-from app.schemas import BagRecordingRequestSchema
-from app.schemas.recording import RecordingStatus
-from app.schemas.rosbag import RosbagMetadata
+from app.core.managers import RecordingManager
+from app.di import get_recording_manager
+from app.schemas.recording import RecordingStatus, RecordingStartRequest
+from app.schemas.ros.rosbag import RosbagMetadata
 
 
 router = APIRouter(prefix="/api/v1/recording")
@@ -16,7 +15,7 @@ router = APIRouter(prefix="/api/v1/recording")
     response_model=RecordingStatus,
 )
 def start_recording(
-    request: BagRecordingRequestSchema,
+    request: RecordingStartRequest,
     manager: Annotated[RecordingManager, Depends(get_recording_manager)],
 ):
     manager.start_recording(request)

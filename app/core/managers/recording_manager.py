@@ -6,11 +6,13 @@ from typing import Tuple
 
 from sqlalchemy.orm import Session
 
-from app.core.services.rosbag_service import RosbagService
-from app.schemas import ros
-from app.schemas.bags import BagRecordingRequestSchema
-from app.schemas.recording import RecordingMetadata, RecordingStatus
-from app.schemas.rosbag import RosbagMetadata, RosbagMetadataCreate
+from app.core.services import RosbagService
+from app.schemas.recording import (
+    RecordingMetadata,
+    RecordingStatus,
+    RecordingStartRequest,
+)
+from app.schemas.ros.rosbag import RosbagMetadata, RosbagMetadataCreate
 from app.utils.rosbag import (
     create_rosbag_name_with_date,
     get_rosbag_size,
@@ -18,7 +20,7 @@ from app.utils.rosbag import (
 )
 from app.db.database import db_session
 from app.crud.rosbag import create_rosbag
-from app.logger import logger
+from app.logging import logger
 
 
 class RecordingState(Enum):
@@ -38,7 +40,7 @@ class RecordingManager:
     _start_time: float
     _end_time: float
     _elapsed_time: float
-    _curr_request: Tuple[BagRecordingRequestSchema, str] | None
+    _curr_request: Tuple[RecordingStartRequest, str] | None
 
     _update_thread: Thread
     _update_lock: Lock
@@ -70,7 +72,7 @@ class RecordingManager:
         self._update_thread_running = False
         self._update_thread.join(1)
 
-    def start_recording(self, req: BagRecordingRequestSchema):
+    def start_recording(self, req: RecordingStartRequest):
         if self._state is not RecordingState.IDLE:
             raise Exception("A recording is already on-going")
         self._state = RecordingState.INITIALIZING

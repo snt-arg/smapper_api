@@ -2,14 +2,13 @@ import threading
 import time
 from typing import List
 
-from app.core.services import Service, RosService
-from app.core.services.service import ServiceException, ServiceState
-from app.exceptions import ServiceManagerException
-from app.logger import logger
-from app.schemas.services import (
+from app.core.services import Service, RosService, ServiceException
+from app.core.exceptions import ServiceManagerException
+from app.logging import logger
+from app.schemas.service import (
     RosServiceConfigSchema,
     ServiceConfigSchema,
-    ServiceSchema,
+    ServiceStatus,
 )
 
 # TODO: Improve errors/exceptions
@@ -20,6 +19,7 @@ class ServiceManager:
 
     def __init__(self):
         """Initialize the service manager and start a background polling thread."""
+        logger.info("Initializing Service Manager")
 
         self.services: dict[str, Service] = {}
         self._poll_thread = threading.Thread(
@@ -30,16 +30,9 @@ class ServiceManager:
         self.lock = threading.Lock()
         self._poll_thread.start()
 
-    def _poll_services_cb(self):
-        """Background callback that continuously polls all services to update their states."""
-
-        while True:
-            logger.debug("Polling services...")
-            for _, service in self.services.items():
-                self.lock.acquire()
-                service.poll()
-                self.lock.release()
-            time.sleep(1)
+    def terminate(self):
+        logger.info("Terminating Service Manager")
+        self.stop_all()
 
     def add_service(
         self, service: ServiceConfigSchema | RosServiceConfigSchema
@@ -55,6 +48,7 @@ class ServiceManager:
         if self.services.get(service.id):
             logger.error(f"A Service with id: {id} already exists")
             return False
+        logger.info(f"Adding a new service to be managed. Service id -> {service.id}")
         if isinstance(service, ServiceConfigSchema):
             self.services[service.id] = Service(**service.model_dump())
         else:
@@ -74,6 +68,7 @@ class ServiceManager:
         if self.services.get(id):
             logger.error(f"A Service with id: {id} does not exist")
             return False
+        logger.info(f"Removing service to be managed. Service id -> {id}")
         self.stop_service(id)
         self.services.pop(id)
 
@@ -82,6 +77,7 @@ class ServiceManager:
     def remove_all_services(self) -> None:
         """Stop and remove all services from the manager."""
 
+        logger.info("Removing all services from being managed.")
         self.stop_all()
         self.services.clear()
 
@@ -90,6 +86,8 @@ class ServiceManager:
 
         Ignores and continues on failure.
         """
+
+        logger.info("Starting all services")
         for _, service in self.services.items():
             try:
                 service.start()
@@ -101,6 +99,8 @@ class ServiceManager:
 
         Logs errors but continues stopping others.
         """
+
+        logger.info("Stopping all services")
         for id, service in self.services.items():
             try:
                 service.stop()
@@ -112,6 +112,8 @@ class ServiceManager:
 
         Logs errors but continues restarting others.
         """
+
+        logger.info("Restarting all services")
         for id, service in self.services.items():
             try:
                 service.restart()
@@ -127,7 +129,9 @@ class ServiceManager:
         Raises:
             ServiceManagerException: If the service does not exist.
         """
-        service = self.__get_service_by_id(id)
+
+        service = self._get_service(id)
+        logger.info(f"Starting service with id {id}")
         service.start()
 
     def stop_service(self, id: str) -> None:
@@ -139,7 +143,8 @@ class ServiceManager:
         Raises:
             ServiceManagerException: If the service does not exist.
         """
-        service = self.__get_service_by_id(id)
+        service = self._get_service(id)
+        logger.info(f"Stopping service with id {id}")
         service.stop()
 
     def restart_service(self, id: str) -> None:
@@ -151,13 +156,14 @@ class ServiceManager:
         Raises:
             ServiceManagerException: If the service does not exist.
         """
-        service = self.__get_service_by_id(id)
+        service = self._get_service(id)
+        logger.info(f"Restarting service with id {id}")
         service.restart()
 
-    def get_services(self) -> List[ServiceSchema]:
-        return [service.get_schema() for _, service in self.services.items()]
+    def get_services(self) -> List[ServiceStatus]:
+        return [service.get_status() for _, service in self.services.items()]
 
-    def get_service_by_id(self, id: str) -> ServiceSchema:
+    def get_service(self, id: str) -> ServiceStatus:
         """Retrieve the service schema for a specific service.
 
         Args:
@@ -169,9 +175,9 @@ class ServiceManager:
         Raises:
             ServiceManagerException: If the service does not exist.
         """
-        return self.__get_service_by_id(id).get_schema()
+        return self._get_service(id).get_status()
 
-    def __get_service_by_id(self, id) -> Service:
+    def _get_service(self, id) -> Service:
         """Internal helper to retrieve a service object by ID.
 
         Args:
@@ -192,3 +198,14 @@ class ServiceManager:
                 f"Service with id {id} does not yet exist. It must be created first."
             )
         return service
+
+    def _poll_services_cb(self):
+        """Background callback that continuously polls all services to update their states."""
+
+        while True:
+            logger.debug("Polling services...")
+            for _, service in self.services.items():
+                self.lock.acquire()
+                service.poll()
+                self.lock.release()
+            time.sleep(1)

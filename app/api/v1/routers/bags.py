@@ -2,7 +2,7 @@ from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.schemas.rosbag import RosbagMetadata, RosbagMetadataUpdate
+from app.schemas.ros.rosbag import RosbagMetadata, RosbagMetadataUpdate
 from app.crud import rosbag as crud
 
 

@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Set, Tuple
 from pydantic import BaseModel, Field
 import importlib
 import time
-from app.logger import logger
+from app.logging import logger
 
 import rclpy
 from rclpy.node import Node, Subscription
