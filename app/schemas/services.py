@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, Dict
 
 
-class ServiceSchema(BaseModel):
+class ServiceMetadataBase(BaseModel):
     """Schema for defining a basic external service.
 
     Attributes:
@@ -13,10 +13,26 @@ class ServiceSchema(BaseModel):
 
     id: str
     name: str
+
+
+class ServiceFailure(BaseModel):
+    """Data model capturing details of a service failure.
+
+    Attributes:
+        ret_code: The return code from the failed process.
+        std_err: The standard error output from the process.
+    """
+
+    ret_code: int
+    std_err: str
+
+
+class ServiceStatus(ServiceMetadataBase):
     state: str
+    failure: Optional[ServiceFailure]
 
 
-class ServiceConfigSchema(BaseModel):
+class ServiceConfigSchema(ServiceMetadataBase):
     """Schema for defining a basic external service.
 
     Attributes:
@@ -27,8 +43,6 @@ class ServiceConfigSchema(BaseModel):
         env: Optional dictionary of environment variables to set for the service process.
     """
 
-    name: str
-    id: str
     cmd: str
     auto_start: bool
     restart_on_failure: bool
@@ -36,7 +50,7 @@ class ServiceConfigSchema(BaseModel):
     env: Optional[Dict[str, str]] = None
 
 
-class RosServiceConfigSchema(BaseModel):
+class RosServiceConfigSchema(ServiceMetadataBase):
     """Schema for defining a ROS-specific service.
 
     Attributes:
@@ -50,8 +64,6 @@ class RosServiceConfigSchema(BaseModel):
         exec: The node or launch file to execute.
     """
 
-    name: str
-    id: str
     auto_start: bool
     restart_on_failure: bool
     exec_type: str

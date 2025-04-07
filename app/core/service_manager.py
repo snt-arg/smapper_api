@@ -9,7 +9,8 @@ from app.logger import logger
 from app.schemas.services import (
     RosServiceConfigSchema,
     ServiceConfigSchema,
-    ServiceSchema,
+    ServiceMetadataBase,
+    ServiceStatus,
 )
 
 # TODO: Improve errors/exceptions
@@ -29,17 +30,6 @@ class ServiceManager:
         )
         self.lock = threading.Lock()
         self._poll_thread.start()
-
-    def _poll_services_cb(self):
-        """Background callback that continuously polls all services to update their states."""
-
-        while True:
-            logger.debug("Polling services...")
-            for _, service in self.services.items():
-                self.lock.acquire()
-                service.poll()
-                self.lock.release()
-            time.sleep(1)
 
     def add_service(
         self, service: ServiceConfigSchema | RosServiceConfigSchema
@@ -127,7 +117,7 @@ class ServiceManager:
         Raises:
             ServiceManagerException: If the service does not exist.
         """
-        service = self.__get_service_by_id(id)
+        service = self._get_service(id)
         service.start()
 
     def stop_service(self, id: str) -> None:
@@ -139,7 +129,7 @@ class ServiceManager:
         Raises:
             ServiceManagerException: If the service does not exist.
         """
-        service = self.__get_service_by_id(id)
+        service = self._get_service(id)
         service.stop()
 
     def restart_service(self, id: str) -> None:
@@ -151,13 +141,13 @@ class ServiceManager:
         Raises:
             ServiceManagerException: If the service does not exist.
         """
-        service = self.__get_service_by_id(id)
+        service = self._get_service(id)
         service.restart()
 
-    def get_services(self) -> List[ServiceSchema]:
-        return [service.get_schema() for _, service in self.services.items()]
+    def get_services(self) -> List[ServiceStatus]:
+        return [service.get_status() for _, service in self.services.items()]
 
-    def get_service_by_id(self, id: str) -> ServiceSchema:
+    def get_service(self, id: str) -> ServiceStatus:
         """Retrieve the service schema for a specific service.
 
         Args:
@@ -169,9 +159,9 @@ class ServiceManager:
         Raises:
             ServiceManagerException: If the service does not exist.
         """
-        return self.__get_service_by_id(id).get_schema()
+        return self._get_service(id).get_status()
 
-    def __get_service_by_id(self, id) -> Service:
+    def _get_service(self, id) -> Service:
         """Internal helper to retrieve a service object by ID.
 
         Args:
@@ -192,3 +182,14 @@ class ServiceManager:
                 f"Service with id {id} does not yet exist. It must be created first."
             )
         return service
+
+    def _poll_services_cb(self):
+        """Background callback that continuously polls all services to update their states."""
+
+        while True:
+            logger.debug("Polling services...")
+            for _, service in self.services.items():
+                self.lock.acquire()
+                service.poll()
+                self.lock.release()
+            time.sleep(1)
