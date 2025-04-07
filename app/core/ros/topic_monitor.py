@@ -40,7 +40,7 @@ class TopicState(BaseModel):
     hz: float = Field(default=0.0)
     msg_type: str
     last_rcv_ts: float
-    message_count: int
+    subscribers: int
 
 
 class TopicMonitor(Node):
@@ -91,6 +91,7 @@ class TopicMonitor(Node):
                 msg_type=state.msg_type,
                 hz=state.hz,
                 status=state.status.value,
+                subscribers=state.subscribers,
             )
         return None
 
@@ -106,6 +107,7 @@ class TopicMonitor(Node):
                 msg_type=state.msg_type,
                 hz=state.hz,
                 status=state.status.value,
+                subscribers=state.subscribers,
             )
             for name, state in self._topic_states.items()
         ]
@@ -221,7 +223,7 @@ class TopicMonitor(Node):
                 msg_type=msg_type_str,
                 hz=0,
                 last_rcv_ts=0,
-                message_count=0,
+                subscribers=0,
             )
 
             logger.info(
@@ -267,9 +269,7 @@ class TopicMonitor(Node):
         state.status = TopicStatus.ONLINE
         state.hz = 1.0 / time_diff if time_diff > 0 else 0
         state.last_rcv_ts = current_time
-        state.message_count += 1
-        # TODO: Add the count of subscribers
-        # state.subscribers = self.count_subscribers(topic_name) - 1
+        state.subscribers = self.count_subscribers(topic_name) - 1
 
     def _monitor_topics(self) -> None:
         """Monitor the topics and update their status.

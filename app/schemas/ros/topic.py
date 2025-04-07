@@ -19,3 +19,4 @@ class TopicStatus(TopicBase):
     status: str = Field(
         description="The current status of the topic. (Online, Offline)"
     )
+    subscribers: int = Field(description="The current number of subscribers")
