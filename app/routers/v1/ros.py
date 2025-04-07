@@ -1,7 +1,7 @@
 from typing import Annotated, List, TYPE_CHECKING
 from fastapi import APIRouter, Depends
 from app.dependencies import get_topic_monitor_runner
-from app.schemas.ros import TopicSchema
+from app.schemas.ros.topic import TopicStatus
 
 
 if TYPE_CHECKING:
@@ -17,12 +17,12 @@ router = APIRouter(prefix="/api/v1")
 )
 def get_ros_topics(
     runner: Annotated["TopicMonitorRunner", Depends(get_topic_monitor_runner)],
-) -> List[TopicSchema]:
+) -> List[TopicStatus]:
     states = []
     if runner:
         for name, state in runner.get_all_topic_states().items():
             states.append(
-                TopicSchema(
+                TopicStatus(
                     name=name,
                     msg_type=state.msg_type,
                     hz=state.hz,
@@ -39,12 +39,12 @@ def get_ros_topics(
 def get_topic_by_name(
     topic_name: str,
     runner: Annotated["TopicMonitorRunner", Depends(get_topic_monitor_runner)],
-) -> TopicSchema | None:
+) -> TopicStatus | None:
     if runner:
         state = runner.get_topic_state(topic_name)
         if state is None:
             return None
-        return TopicSchema(
+        return TopicStatus(
             name=topic_name,
             msg_type=state.msg_type,
             hz=state.hz,

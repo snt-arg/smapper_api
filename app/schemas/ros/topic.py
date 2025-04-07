@@ -1,8 +1,7 @@
-from typing import Optional
 from pydantic import BaseModel
 
 
-class Topic(BaseModel):
+class TopicBase(BaseModel):
     """Represention of a ROS topic.
 
     Attributes:
@@ -15,7 +14,7 @@ class Topic(BaseModel):
     msg_type: str
 
 
-class TopicSchema(Topic):
+class TopicStatus(TopicBase):
     """Schema representing metadata for a ROS topic.
 
     Attributes:

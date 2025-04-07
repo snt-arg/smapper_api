@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy.orm import Session
 from app.models.rosbag_metadata import RosbagMetadata
 from app.models.rosbag_topic import RosbagTopic
-from app.schemas.rosbag import RosbagMetadataCreate, RosbagMetadataUpdate
+from app.schemas.ros.rosbag import RosbagMetadataCreate, RosbagMetadataUpdate
 
 
 def create_rosbag(db: Session, rosbag: RosbagMetadataCreate) -> RosbagMetadata:

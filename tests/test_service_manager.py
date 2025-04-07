@@ -5,7 +5,7 @@ from app.core.services import ServiceState
 from app.core.service_manager import ServiceManager
 from app.core.services.service import Service
 from app.exceptions import ServiceException, ServiceManagerException
-from app.schemas.services import ServiceConfigSchema
+from app.schemas.service import ServiceConfigSchema
 
 
 class TestServiceManager(unittest.TestCase):

@@ -4,8 +4,7 @@ from app.core.service_manager import (
     ServiceManager,
 )
 from app.dependencies import get_service_manager
-from app.schemas.services import (
-    ServiceMetadataBase,
+from app.schemas.service import (
     ServiceStatus,
 )
 

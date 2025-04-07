@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
-from app.schemas.ros import Topic
+from app.schemas.ros.topic import TopicBase
 
 
-class RosbagTopic(Topic):
+class RosbagTopic(TopicBase):
     id: int
 
     class Config:
@@ -22,7 +22,7 @@ class RosbagMetadataBase(BaseModel):
 
 
 class RosbagMetadataCreate(RosbagMetadataBase):
-    topics: List[Topic] = []
+    topics: List[TopicBase] = []
     rosbag_path: str
 
 
@@ -38,3 +38,21 @@ class RosbagMetadata(RosbagMetadataBase):
 
     class Config:
         from_attributes = True
+
+
+class RosbagFileMetadata(BaseModel):
+    """Minimal representation of metadata.yaml of ROS2 bag.
+
+    Attributes:
+        duration: Duration of the recording in nanoseconds.
+        unix_timestamp: Start time of the recording in epoch nanoseconds.
+        topics: List of topics recorded in the bag.
+        message_count: Total number of messages recorded.
+        db_path: Relative path to the underlying database file.
+    """
+
+    duration: float
+    start_time: float
+    topics: List[TopicBase]
+    message_count: int
+    db_path: str

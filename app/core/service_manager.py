@@ -6,10 +6,9 @@ from app.core.services import Service, RosService
 from app.core.services.service import ServiceException, ServiceState
 from app.exceptions import ServiceManagerException
 from app.logger import logger
-from app.schemas.services import (
+from app.schemas.service import (
     RosServiceConfigSchema,
     ServiceConfigSchema,
-    ServiceMetadataBase,
     ServiceStatus,
 )
 

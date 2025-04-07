@@ -8,7 +8,7 @@ from typing import Dict, Optional
 
 from app.logger import logger
 from app.exceptions import ServiceException
-from app.schemas.services import ServiceMetadataBase, ServiceFailure, ServiceStatus
+from app.schemas.service import ServiceFailure, ServiceStatus
 
 
 class ServiceState(Enum):
