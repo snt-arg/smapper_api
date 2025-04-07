@@ -50,7 +50,7 @@ services:
     id: docs_srv
     auto_start: false
     restart_on_failure: false
-    cwd: "/home/pedros/rosbox_shared/smapper/"
+    cwd: "$HOME/shared/smapper/"
     cmd: "docker run --rm -p 8080:8000 -v ${PWD}:/docs squidfunk/mkdocs-material"
 
 ros:
