@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import TYPE_CHECKING, Optional
 
-from app.core.recording_manager import RecordingManager
+from app.core.managers import RecordingManager
 from app.core.ros.ros_factory import create_topic_monitor_runner
 from .settings import get_device_settings
 from app.logging import logger

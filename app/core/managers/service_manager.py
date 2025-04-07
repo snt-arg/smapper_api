@@ -2,8 +2,7 @@ import threading
 import time
 from typing import List
 
-from app.core.services import Service, RosService
-from app.core.services.service import ServiceException, ServiceState
+from app.core.services import Service, RosService, ServiceException
 from app.core.exceptions import ServiceManagerException
 from app.logging import logger
 from app.schemas.service import (
@@ -41,6 +40,7 @@ class ServiceManager:
         Returns:
             True if added successfully, False if a service with the same ID already exists.
         """
+        print(service)
         if self.services.get(service.id):
             logger.error(f"A Service with id: {id} already exists")
             return False

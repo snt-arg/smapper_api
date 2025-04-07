@@ -1,6 +1,6 @@
-from typing import Dict, Optional
-from .service import ServiceState, Service
 import os
+from typing import Dict, Optional
+from app.core.services import ServiceState, Service
 from app.logging import logger
 
 
@@ -14,8 +14,8 @@ class RosService(Service):
 
     def __init__(
         self,
-        name: str,
         id: str,
+        name: str,
         auto_start: bool,
         restart_on_failure: bool,
         ros_distro: str,
@@ -42,8 +42,8 @@ class RosService(Service):
             the service state is set to FAILURE.
         """
         super().__init__(
-            name,
             id,
+            name,
             "",
             env=env,
             auto_start=auto_start,

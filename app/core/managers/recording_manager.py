@@ -6,8 +6,7 @@ from typing import Tuple
 
 from sqlalchemy.orm import Session
 
-from app.core.services.rosbag_service import RosbagService
-from app.schemas import ros
+from app.core.services import RosbagService
 from app.schemas.recording import (
     RecordingMetadata,
     RecordingStatus,

@@ -3,7 +3,7 @@ from typing import Annotated
 from typing_extensions import runtime
 
 from fastapi import Depends, FastAPI
-from app.core.service_manager import ServiceManager
+from app.core.managers import ServiceManager
 from app.config.settings import DeviceSettings
 from app.logging import logger
 from app.di import (

@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from app.core.service_manager import ServiceManager
+from app.core.managers import ServiceManager
 from app.logging import logger
 
 

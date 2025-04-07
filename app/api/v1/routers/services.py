@@ -1,6 +1,6 @@
 from typing import Annotated, List
 from fastapi import APIRouter, Depends
-from app.core.service_manager import (
+from app.core.managers import (
     ServiceManager,
 )
 from app.di import get_service_manager
