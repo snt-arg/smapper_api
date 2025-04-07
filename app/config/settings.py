@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Tuple, Type
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 from pydantic_settings import (
     BaseSettings,
@@ -34,6 +34,7 @@ the /docs endpoint for the device documentation
     debug: bool = False
 
     allowed_origins: list[str] = []
+    openapi_tags: list[Dict[str, Any]]
 
     model_config = SettingsConfigDict(
         yaml_file="config/api_config.yaml", env_file=".env", env_prefix="API_"

@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 from app.core.services import ServiceState
-from app.core.service_manager import ServiceManager
+from app.core.managers import ServiceManager
 from app.core.exceptions import ServiceException, ServiceManagerException
 from app.schemas.service import ServiceConfigSchema
 
@@ -21,16 +21,15 @@ class TestServiceManager(unittest.TestCase):
 
     def test_add_service(self):
         """Test adding a service successfully"""
-        result = self.manager.add_service(self.service_schema_1)
-        self.assertTrue(result)
+        self.manager.add_service(self.service_schema_1)
         self.assertEqual(len(self.manager.services), 1)
         self.manager.remove_all_services()
 
     def test_add_service_duplicate_id(self):
         """Test adding a service with a duplicate ID"""
         self.manager.add_service(self.service_schema_1)
-        result = self.manager.add_service(self.service_schema_1)
-        self.assertFalse(result)
+        with self.assertRaises(ServiceManagerException):
+            self.manager.add_service(self.service_schema_1)
         self.assertEqual(len(self.manager.services), 1)
         self.manager.remove_all_services()
 
@@ -125,7 +124,7 @@ class TestServiceManager(unittest.TestCase):
 
     @patch(
         "app.core.services.Service.start",
-        side_effect=ServiceException("dummy_id", "Failed to start", "no cmd", ""),
+        side_effect=ServiceException("dummy_id", "Failed to start"),
     )
     def test_start_service_failure(self, mock_start):
         """Test handling failure when starting a service"""
@@ -136,7 +135,7 @@ class TestServiceManager(unittest.TestCase):
 
     @patch(
         "app.core.services.Service.stop",
-        side_effect=ServiceException("dummy_id", "Failed to stop", "no cmd", ""),
+        side_effect=ServiceException("dummy_id", "Failed to stop"),
     )
     def test_stop_service_failure(self, mock_stop):
         """Test handling failure when stopping a service"""

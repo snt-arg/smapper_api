@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
@@ -24,12 +25,10 @@ class ServiceException(Exception):
         self,
         service_id: str,
         reason: str,
-        cmd: str,
-        stderr: str,
+        stderr: Optional[str] = None,
     ):
         self.reason = reason
         self.service_id = service_id
-        self.cmd = cmd
         self.stderr = stderr
         super().__init__(f"[service:{self.service_id}] - {self.reason}")
 
@@ -37,7 +36,7 @@ class ServiceException(Exception):
 class ServiceManagerException(Exception):
     """Raised for service manager-level errors such as missing service instances."""
 
-    def __init__(self, detail: str = "This functionality is not yet implemented."):
+    def __init__(self, detail: str):
         self.detail = detail
         super().__init__(detail)
 
@@ -87,7 +86,6 @@ def init_exception_handlers(app: FastAPI):
             content={
                 "service_id": exc.service_id,
                 "reason": exc.reason,
-                "cmd": exc.cmd,
                 "stderr": exc.stderr,
             },
         )

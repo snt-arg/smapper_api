@@ -13,6 +13,7 @@ router = APIRouter(prefix="/api/v1/recording")
     "/start",
     description="Start a new rosbag recording session.",
     response_model=RecordingStatus,
+    tags=["recordings"],
 )
 def start_recording(
     request: RecordingStartRequest,
@@ -26,6 +27,7 @@ def start_recording(
     "/stop",
     description="Stop the current running rosbag recording session.",
     response_model=RosbagMetadata,
+    tags=["recordings"],
 )
 def stop_recording(
     manager: Annotated[RecordingManager, Depends(get_recording_manager)],
@@ -37,6 +39,7 @@ def stop_recording(
     "/",
     description="Get the current status of the rosbag recording session.",
     response_model=RecordingStatus,
+    tags=["recordings"],
 )
 def get_bag_recording_state(
     manager: Annotated[RecordingManager, Depends(get_recording_manager)],

@@ -13,12 +13,17 @@ router = APIRouter(prefix="/api/v1/rosbags")
     "/",
     description="Return a list of all available bag recordings with associated metadata.",
     response_model=List[RosbagMetadata],
+    tags=["rosbags"],
 )
 def read_bags(db: Annotated[Session, Depends(get_db)]):
     return crud.get_rosbags(db)
 
 
-@router.get("/{rosbag_id}", response_model=RosbagMetadata)
+@router.get(
+    "/{rosbag_id}",
+    response_model=RosbagMetadata,
+    tags=["rosbags"],
+)
 def read_rosbag(rosbag_id: int, db: Annotated[Session, Depends(get_db)]):
     rosbag = crud.get_rosbag(db, rosbag_id)
     if not rosbag:
@@ -26,7 +31,11 @@ def read_rosbag(rosbag_id: int, db: Annotated[Session, Depends(get_db)]):
     return rosbag
 
 
-@router.put("/{rosbag_id}", response_model=RosbagMetadata)
+@router.put(
+    "/{rosbag_id}",
+    response_model=RosbagMetadata,
+    tags=["rosbags"],
+)
 def update_rosbag_route(
     rosbag_id: int,
     update_data: RosbagMetadataUpdate,
@@ -38,7 +47,10 @@ def update_rosbag_route(
     return updated
 
 
-@router.delete("/{rosbag_id}")
+@router.delete(
+    "/{rosbag_id}",
+    tags=["rosbags"],
+)
 def delete_rosbag_route(rosbag_id: int, db: Annotated[Session, Depends(get_db)]):
     deleted = crud.delete_rosbag(db, rosbag_id)
     if not deleted:

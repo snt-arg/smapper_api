@@ -4,6 +4,7 @@ from .routers.power import router as power_router
 from .routers.services import router as services_router
 from .routers.ros import router as ros_router
 from .routers.recordings import router as recordings_router
+from .routers.settings import router as settings_router
 
 __all__ = [
     "sensors_router",
@@ -12,4 +13,5 @@ __all__ = [
     "services_router",
     "ros_router",
     "recordings_router",
+    "settings_router",
 ]

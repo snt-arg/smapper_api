@@ -11,8 +11,6 @@ from app.schemas.service import (
     ServiceStatus,
 )
 
-# TODO: Improve errors/exceptions
-
 
 class ServiceManager:
     """Manages a collection of services, handling lifecycle operations and polling in a background thread."""
@@ -36,7 +34,7 @@ class ServiceManager:
 
     def add_service(
         self, service: ServiceConfigSchema | RosServiceConfigSchema
-    ) -> bool:
+    ) -> None:
         """Add a new service to the manager.
 
         Args:
@@ -47,16 +45,14 @@ class ServiceManager:
         """
         if self.services.get(service.id):
             logger.error(f"A Service with id: {id} already exists")
-            return False
+            raise ServiceManagerException(f"A Service with id: {id} already exists")
         logger.info(f"Adding a new service to be managed. Service id -> {service.id}")
         if isinstance(service, ServiceConfigSchema):
             self.services[service.id] = Service(**service.model_dump())
         else:
             self.services[service.id] = RosService(**service.model_dump())
 
-        return True
-
-    def remove_service(self, id) -> bool:
+    def remove_service(self, id) -> None:
         """Remove a service from the manager.
 
         Args:
@@ -67,12 +63,10 @@ class ServiceManager:
         """
         if self.services.get(id):
             logger.error(f"A Service with id: {id} does not exist")
-            return False
+            raise ServiceManagerException(f"A Service with id: {id} does not exists")
         logger.info(f"Removing service to be managed. Service id -> {id}")
         self.stop_service(id)
         self.services.pop(id)
-
-        return True
 
     def remove_all_services(self) -> None:
         """Stop and remove all services from the manager."""
@@ -92,7 +86,7 @@ class ServiceManager:
             try:
                 service.start()
             except ServiceException as e:
-                continue
+                logger.error(f"Failed to start service {id} with error: {e}")
 
     def stop_all(self) -> None:
         """Stop all registered services.
@@ -105,7 +99,7 @@ class ServiceManager:
             try:
                 service.stop()
             except ServiceException as e:
-                logger.error(f"Failed to start service {id} with error: {e}")
+                logger.error(f"Failed to stop service {id} with error: {e}")
 
     def restart_all(self) -> None:
         """Restart all registered services.
@@ -118,16 +112,13 @@ class ServiceManager:
             try:
                 service.restart()
             except ServiceException as e:
-                logger.error(f"Failed to start service {id} with error: {e}")
+                logger.error(f"Failed to restart service {id} with error: {e}")
 
     def start_service(self, id: str) -> None:
         """Start a specific service by its ID.
 
         Args:
             id: The ID of the service to start.
-
-        Raises:
-            ServiceManagerException: If the service does not exist.
         """
 
         service = self._get_service(id)
@@ -139,9 +130,6 @@ class ServiceManager:
 
         Args:
             id: The ID of the service to stop.
-
-        Raises:
-            ServiceManagerException: If the service does not exist.
         """
         service = self._get_service(id)
         logger.info(f"Stopping service with id {id}")
@@ -152,9 +140,6 @@ class ServiceManager:
 
         Args:
             id: The ID of the service to restart.
-
-        Raises:
-            ServiceManagerException: If the service does not exist.
         """
         service = self._get_service(id)
         logger.info(f"Restarting service with id {id}")
