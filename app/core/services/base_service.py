@@ -74,7 +74,7 @@ class Service:
         self._auto_start = auto_start
         self._restart_on_failure = restart_on_failure
         self._env = {**env, **os.environ} if env else {**os.environ}
-        self._cwd = cwd or os.path.curdir
+        self._cwd = os.path.expandvars(cwd) if cwd else os.path.curdir
 
         self._state = ServiceState.INACTIVE
         self._process = None
