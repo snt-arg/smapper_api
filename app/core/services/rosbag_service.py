@@ -11,9 +11,7 @@ class RosbagService(Service):
     all topics or a specific list of topics to a given output directory.
     """
 
-    def __init__(
-        self, output_dir: str, name: str, topics_to_record: Optional[List[str]] = None
-    ) -> None:
+    def __init__(self, output_dir: str, name: str, topics_to_record: List[str]) -> None:
         """Initialize the RosbagService.
 
         Args:
@@ -21,11 +19,13 @@ class RosbagService(Service):
             name: Name of the output rosbag file/directory.
             topics_to_record: Optional list of topic names to record. If None, all topics will be recorded.
         """
-        self.topics = " ".join(topics_to_record) if topics_to_record else "-a"
+        self.topics = " ".join(topics_to_record) if len(topics_to_record) > 1 else "-a"
         self.output = os.path.join(output_dir, name)
         cmd = f"ros2 bag record -o {self.output} {self.topics}"
         super().__init__(
             name="Rosbag Service",
             id="rosbag_service",
             cmd=cmd,
+            auto_start=False,
+            restart_on_failure=False,
         )

@@ -8,6 +8,7 @@ from app.settings import DeviceSettings
 from app.logger import logger
 from app.dependencies import (
     get_device_settings,
+    get_recording_manager,
     get_topic_monitor_runner,
     get_service_manager,
 )
@@ -59,6 +60,7 @@ async def lifespan(app: FastAPI):
     """
     # Executed on startup
     service_manager = get_service_manager()
+    recording_manager = get_recording_manager()
     topic_monitor_runner = get_topic_monitor_runner()
     config = get_device_settings()
 
@@ -72,3 +74,5 @@ async def lifespan(app: FastAPI):
     terminate_services(service_manager)
     if topic_monitor_runner:
         topic_monitor_runner.stop()
+
+    recording_manager.terminate()
