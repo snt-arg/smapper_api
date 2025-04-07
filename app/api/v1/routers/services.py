@@ -15,6 +15,7 @@ router = APIRouter(prefix="/api/v1")
 @router.get(
     "/services",
     description="Get a list of all configured services, including both standard and ROS-based services.",
+    tags=["services"],
 )
 def get_services(
     manager: Annotated[ServiceManager, Depends(get_service_manager)],
@@ -25,6 +26,7 @@ def get_services(
 @router.get(
     "/services/{id}",
     description="Retrieve the full configuration of a specific service by its ID.",
+    tags=["services"],
 )
 def get_service_by_id(
     id: str,
@@ -36,6 +38,7 @@ def get_service_by_id(
 @router.post(
     "/services/{id}/start",
     description="Start the specified service by its ID. Returns the updated state after starting.",
+    tags=["services"],
 )
 def start_service_with_id(
     id: str,
@@ -48,6 +51,7 @@ def start_service_with_id(
 @router.post(
     "/services/{id}/stop",
     description="Stop the specified service by its ID. Returns the updated state after stopping.",
+    tags=["services"],
 )
 def stop_service_with_id(
     id: str,

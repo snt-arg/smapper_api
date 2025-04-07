@@ -12,6 +12,7 @@ router = APIRouter(prefix="/api/v1")
 @router.get(
     "/sensors",
     description="Get a list of all sensors available on the device, including their name, model, type, and associated service ID.",
+    tags=["sensors"],
 )
 def get_sensors(
     config: Annotated[DeviceSettings, Depends(get_device_settings)],
@@ -22,6 +23,7 @@ def get_sensors(
 @router.get(
     "/sensors/{sensor_name}",
     description="Get detailed metadata for a specific sensor by its name. Returns 404 if the sensor is not found.",
+    tags=["sensors"],
 )
 def get_sensor(
     sensor_name: str,

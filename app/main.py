@@ -26,6 +26,7 @@ app = FastAPI(
     version=api_settings.version,
     docs_url=api_settings.docs_url,
     openapi_url=api_settings.openapi_url,
+    openapi_tags=api_settings.openapi_tags,
     debug=api_settings.debug,
     lifespan=lifespan,
 )
