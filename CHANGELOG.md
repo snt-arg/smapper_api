@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### 🧪 Testing
+
+- Adapt tests for new changes
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog
+
 ## [1.0.0] - 2025-04-07
 
 ### 🚀 Features
@@ -44,8 +54,8 @@ All notable changes to this project will be documented in this file.
 - Initial code to use sqlite3
 - Implementation of a proper database for rosbags
 - Create a schema for updating rosbag metadata
-- _(schemas)_ Improve service schemas
-- _(schemas)_ Improve sensor schemas
+- *(schemas)* Improve service schemas
+- *(schemas)* Improve sensor schemas
 - Include openapi tags to endpoints
 - Add a settings router for future
 - Improve exceptions
@@ -92,7 +102,7 @@ All notable changes to this project will be documented in this file.
 - Change topic status to online and offline
 - Move settings out from config/ subdir
 - Improve service schemas
-- _(config)_ Improve services names and ids
+- *(config)* Improve services names and ids
 - Remove unused schemas and organize them
 - Add logging to service manager
 - Create a terminate function for service manager
@@ -118,7 +128,7 @@ All notable changes to this project will be documented in this file.
 - Delete .env
 - Remove old requirements.txt
 - Improve api description
-- _(config)_ Add correct topics to monitor
+- *(config)* Add correct topics to monitor
 - Ignore sqlite db files
 - Project structure improvement
 - Improve core/ subfolder structure
