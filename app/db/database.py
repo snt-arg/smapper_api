@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
+from app.logging import logger
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./rosbag_manager.db"
 
@@ -33,5 +34,6 @@ def db_session():
         db_gen.close()
 
 
-def create_db():
+def init_db():
+    logger.info("Initializing Database")
     Base.metadata.create_all(bind=engine)

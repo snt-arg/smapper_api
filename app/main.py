@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.db.database import create_db
+from app.db.database import init_db
 from app.core.lifespan import lifespan
 from app.di import get_api_settings
 from app.core.exceptions import init_exception_handlers
@@ -15,7 +15,7 @@ from app.api.v1 import (
     settings_router,
 )
 
-create_db()
+init_db()
 
 # Get settings loaded from configuration file
 api_settings = get_api_settings()
