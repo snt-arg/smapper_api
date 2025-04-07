@@ -11,7 +11,7 @@ from pydantic_settings import (
 from app.schemas import (
     ServiceConfigSchema,
     RosServiceConfigSchema,
-    SensorSchema,
+    SensorMetadataBase,
     OnboardPCSchema,
 )
 
@@ -57,7 +57,7 @@ class RosSchema(BaseModel):
 
 class DeviceSettings(BaseSettings):
     services: list[ServiceConfigSchema | RosServiceConfigSchema] = Field(default=[])
-    sensors: list[SensorSchema] = Field(default=[])
+    sensors: list[SensorMetadataBase] = Field(default=[])
     onboard_pc: OnboardPCSchema = Field(
         default=OnboardPCSchema(model="Jetson AGX Orin Development Kit")
     )

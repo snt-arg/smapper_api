@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class SensorSchema(BaseModel):
+class SensorMetadataBase(BaseModel):
     """Schema representing metadata for a hardware sensor.
 
     Attributes:

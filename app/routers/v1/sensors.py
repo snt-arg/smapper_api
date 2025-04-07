@@ -3,7 +3,7 @@ from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
 from app.settings import DeviceSettings
 from app.dependencies import get_device_settings
-from app.schemas.sensors import SensorSchema
+from app.schemas.sensors import SensorMetadataBase
 
 
 router = APIRouter(prefix="/api/v1")
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/api/v1")
 )
 def get_sensors(
     config: Annotated[DeviceSettings, Depends(get_device_settings)],
-) -> List[SensorSchema]:
+) -> List[SensorMetadataBase]:
     return config.sensors
 
 
@@ -26,7 +26,7 @@ def get_sensors(
 def get_sensor(
     sensor_name: str,
     config: Annotated[DeviceSettings, Depends(get_device_settings)],
-) -> SensorSchema:
+) -> SensorMetadataBase:
     for sensor in config.sensors:
         if sensor.name == sensor_name:
             return sensor
