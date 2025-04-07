@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.db.database import create_db
-from app.lifespan import lifespan
-from app.dependencies import get_api_settings
-from app.exceptions import init_exception_handlers
-from app.routers.v1 import (
+from app.core.lifespan import lifespan
+from app.di import get_api_settings
+from app.core.exceptions import init_exception_handlers
+from app.api.v1 import (
     sensors_router,
     bags_router,
     power_router,

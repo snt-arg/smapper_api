@@ -4,8 +4,8 @@ from typing import List
 
 from app.core.services import Service, RosService
 from app.core.services.service import ServiceException, ServiceState
-from app.exceptions import ServiceManagerException
-from app.logger import logger
+from app.core.exceptions import ServiceManagerException
+from app.logging import logger
 from app.schemas.service import (
     RosServiceConfigSchema,
     ServiceConfigSchema,

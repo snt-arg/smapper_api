@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 from .service import ServiceState, Service
 import os
-from app.logger import logger
+from app.logging import logger
 
 
 class RosService(Service):

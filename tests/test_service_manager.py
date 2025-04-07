@@ -1,10 +1,8 @@
-import time
 import unittest
 from unittest.mock import patch
 from app.core.services import ServiceState
 from app.core.service_manager import ServiceManager
-from app.core.services.service import Service
-from app.exceptions import ServiceException, ServiceManagerException
+from app.core.exceptions import ServiceException, ServiceManagerException
 from app.schemas.service import ServiceConfigSchema
 
 
@@ -14,11 +12,11 @@ class TestServiceManager(unittest.TestCase):
         """Setup a fresh instance of ServiceManager for each test"""
         self.manager = ServiceManager()
         self.service_schema_1 = ServiceConfigSchema(
-            name="Test 1", id="test_service_1", srv_type="SERVICE", cmd="sleep 0.1"
+            name="Test 1", id="test_service_1", cmd="sleep 0.1"
         )
 
         self.service_schema_2 = ServiceConfigSchema(
-            name="Test 2", id="test_service_2", srv_type="SERVICE", cmd="sleep 0.3"
+            name="Test 2", id="test_service_2", cmd="sleep 0.3"
         )
 
     def test_add_service(self):
@@ -67,13 +65,13 @@ class TestServiceManager(unittest.TestCase):
         self.manager.add_service(self.service_schema_1)
         self.manager.start_all()
         self.assertEqual(
-            self.manager.get_service_state(self.service_schema_1.id),
-            ServiceState.ACTIVE,
+            self.manager.get_service(self.service_schema_1.id).state,
+            ServiceState.ACTIVE.value,
         )
         self.manager.stop_all()
         self.assertEqual(
-            self.manager.get_service_state(self.service_schema_1.id),
-            ServiceState.INACTIVE,
+            self.manager.get_service(self.service_schema_1.id).state,
+            ServiceState.INACTIVE.value,
         )
         self.manager.remove_all_services()
 
@@ -82,15 +80,19 @@ class TestServiceManager(unittest.TestCase):
         self.manager.add_service(self.service_schema_1)
         self.manager.add_service(self.service_schema_2)
         self.manager.start_all()
-        states = self.manager.get_service_states()
-        self.assertEqual(states[self.service_schema_1.id], ServiceState.ACTIVE)
-        self.assertEqual(states[self.service_schema_2.id], ServiceState.ACTIVE)
+        states = self.manager.services
+        self.assertEqual(
+            states[self.service_schema_1.id].get_state(), ServiceState.ACTIVE
+        )
+        self.assertEqual(
+            states[self.service_schema_2.id].get_state(), ServiceState.ACTIVE
+        )
         self.manager.remove_all_services()
 
     def test_service_not_found(self):
         """Test handling of a non-existent service"""
         with self.assertRaises(ServiceManagerException):
-            self.manager.get_service_state("non_existent_service")
+            self.manager.get_service("non_existent_service")
 
     def test_start_all_services(self):
         """Test starting all services"""

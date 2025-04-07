@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.exceptions import NotYetImplementedException
+from app.core.exceptions import NotYetImplementedException
 
 
 router = APIRouter(prefix="/api/v1")

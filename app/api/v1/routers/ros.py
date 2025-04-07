@@ -1,6 +1,6 @@
 from typing import Annotated, List, TYPE_CHECKING
 from fastapi import APIRouter, Depends
-from app.dependencies import get_topic_monitor_runner
+from app.di import get_topic_monitor_runner
 from app.schemas.ros.topic import TopicStatus
 
 

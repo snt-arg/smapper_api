@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from app.core.service_manager import (
     ServiceManager,
 )
-from app.dependencies import get_service_manager
+from app.di import get_service_manager
 from app.schemas.service import (
     ServiceStatus,
 )

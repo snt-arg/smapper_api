@@ -21,7 +21,7 @@ from app.utils.rosbag import (
 )
 from app.db.database import db_session
 from app.crud.rosbag import create_rosbag
-from app.logger import logger
+from app.logging import logger
 
 
 class RecordingState(Enum):

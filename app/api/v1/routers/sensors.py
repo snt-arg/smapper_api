@@ -1,8 +1,8 @@
 from functools import lru_cache
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
-from app.settings import DeviceSettings
-from app.dependencies import get_device_settings
+from app.config.settings import DeviceSettings
+from app.di import get_device_settings
 from app.schemas.sensors import SensorMetadataBase
 
 

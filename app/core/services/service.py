@@ -6,8 +6,8 @@ import subprocess
 from typing import Dict, Optional
 
 
-from app.logger import logger
-from app.exceptions import ServiceException
+from app.logging import logger
+from app.core.exceptions import ServiceException
 from app.schemas.service import ServiceFailure, ServiceStatus
 
 

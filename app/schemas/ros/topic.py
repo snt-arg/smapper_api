@@ -1,29 +1,21 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TopicBase(BaseModel):
-    """Represention of a ROS topic.
+    """Base model representing a ROS 2 topic with essential information."""
 
-    Attributes:
-
-        name: The name of the ROS topic (e.g., "/cmd_vel").
-        msg_type: The message type of the topic (e.g., "geometry_msgs/msg/Twist").
-    """
-
-    name: str
-    msg_type: str
+    name: str = Field(description="Name of the topic (e.g., `/cmd_vel`)")
+    msg_type: str = Field(
+        description="The message type of the topic (e.g., `geometry_msgs/msg/Twist`)."
+    )
 
 
 class TopicStatus(TopicBase):
-    """Schema representing metadata for a ROS topic.
+    """Extended topic model including status and frequency information."""
 
-    Attributes:
-
-        name: The name of the ROS topic (e.g., "/cmd_vel").
-        msg_type: The message type of the topic (e.g., "geometry_msgs/msg/Twist").
-        hz: The observed frequency (in Hz) at which messages are published.
-        status: The current status of the topic (e.g., "ACTIVE", "INACTIVE").
-    """
-
-    hz: float
-    status: str
+    hz: float = Field(
+        description="The observed frequency (in Hz) at which messages are published."
+    )
+    status: str = Field(
+        description="The current status of the topic. (Online, Offline)"
+    )

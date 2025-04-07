@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 from app.core.recording_manager import RecordingManager
-from app.dependencies import get_recording_manager
+from app.di import get_recording_manager
 from app.schemas.recording import RecordingStatus, RecordingStartRequest
 from app.schemas.ros.rosbag import RosbagMetadata
 

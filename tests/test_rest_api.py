@@ -22,5 +22,5 @@ class TestAPIEndpoints(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
 
     def test_get_bags(self):
-        resp = self.client.get("/bags")
+        resp = self.client.get("/rosbags")
         self.assertEqual(resp.status_code, 200)
