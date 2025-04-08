@@ -54,7 +54,7 @@ class RosbagMetadataUpdate(BaseModel):
     detail: Optional[str] = Field(
         default=None, description="Updated details for the ROS bag"
     )
-    tags: Optional[str] = Field(
+    tags: Optional[List[str]] = Field(
         default=None, description="Updated comma-separated tags for the ROS bag"
     )
 
