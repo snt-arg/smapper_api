@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [1.0.1] - 2025-04-08
+
+### 🐛 Bug Fixes
+
+- Make RosbagMetadataUpdate tags field match other schemes
 
 ### 🧪 Testing
 
@@ -10,6 +14,7 @@ All notable changes to this project will be documented in this file.
 
 ### ⚙️ Miscellaneous Tasks
 
+- Update changelog
 - Update changelog
 
 ## [1.0.0] - 2025-04-07
