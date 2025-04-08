@@ -38,6 +38,8 @@ def update_rosbag(
 
     update_fields = update_data.model_dump(exclude_unset=True)
     for key, value in update_fields.items():
+        if key == "tags":
+            value = ",".join(value)
         setattr(rosbag, key, value)
 
     db.commit()
