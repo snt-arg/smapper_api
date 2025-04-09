@@ -46,8 +46,8 @@ def get_rosbag_size(path: str) -> int:
 
 def create_rosbag_name_with_date(name: str, epoch_time: float) -> str:
     dt_object = datetime.datetime.fromtimestamp(epoch_time)
-    formatted_time = dt_object.strftime("%Y-%m-%d_%H-%M-%S")
-    return name + "_" + formatted_time
+    formatted_time = dt_object.strftime("%Y_%m_%d-%H_%M_%S")
+    return name.replace(" ", "_") + "-" + formatted_time
 
 
 def read_rosbag_metadata(path: str) -> RosbagFileMetadata:
