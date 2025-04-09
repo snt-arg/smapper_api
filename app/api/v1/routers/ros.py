@@ -21,6 +21,7 @@ def get_topics(
 ) -> List[TopicStatus]:
     if runner:
         return runner.get_topics()
+    return []
 
 
 @router.get(
@@ -34,6 +35,7 @@ def get_topic(
 ) -> TopicStatus | None:
     if runner:
         return runner.get_topic(topic_name)
+    return []
 
 
 @router.post(
