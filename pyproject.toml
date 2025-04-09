@@ -10,6 +10,7 @@ dependencies = [
     "colorlog>=6.9.0",
     "fastapi[standard]>=0.115.2",
     "lark>=1.2.2",
+    "numpy>=2.2.4",
     "psutil>=7.0.0",
     "pybase62>=1.0.0",
     "pydantic-settings>=2.6.0",
