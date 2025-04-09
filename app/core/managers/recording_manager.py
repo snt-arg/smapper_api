@@ -87,8 +87,12 @@ class RecordingManager:
         self._service = RosbagService(self._rosbag_storage_dir, rosbag_name, req.topics)
         self._service.start()
 
+        # TODO: We need to check that the service is running and not crashed or terminated
+
         # Give some time to let ros2 bag create folder
-        time.sleep(1)
+        # TODO: This needs some timeout
+        while not os.path.exists(rosbag_path):
+            time.sleep(0.5)
         self._state = RecordingState.RECORDING
 
     def stop_recording(self) -> RosbagMetadata:
