@@ -145,7 +145,7 @@ class Service:
         self._terminate_child_processes(timeout)
 
         try:
-            if self._process.is_running():
+            if self._process and self._process.is_running():
                 self._process.terminate()
                 self._process.wait(timeout)
         except psutil.NoSuchProcess:
