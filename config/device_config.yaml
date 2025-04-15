@@ -3,60 +3,63 @@ revision: "2.1"
 bags_storage_path: "$HOME/BagStorage/"
 
 onboard_pc:
-    model: Jetson AGX Orin Development Kit
+  model: Jetson AGX Orin Development Kit
 
 sensors:
-    - name: lidar
-      model: Ouster OS0-64
-      type: LIDAR
-      service_id: lidar_srv
+  - name: lidar
+    model: Ouster OS0-64
+    type: LIDAR
+    service_id: lidar_srv
 
-    - name: argus_cameras
-      model: e-CAM200_CUOAGX
-      type: CAMERA
-      service_id: cameras_srv
+  - name: argus_cameras
+    model: e-CAM200_CUOAGX
+    type: CAMERA
+    service_id: cameras_srv
 
 services:
-    - name: Ouster LiDAR
-      id: lidar_srv
-      auto_start: false
-      restart_on_failure: false
-      exec_type: "LAUNCH"
-      ros_distro: humble
-      ws: "$HOME/smapper/software/ros_ws"
-      pkg_name: "smapper_bringup"
-      exec: "lidar.launch.py"
-      env:
-          RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+  - name: Ouster LiDAR
+    id: lidar_srv
+    auto_start: false
+    restart_on_failure: false
+    exec_type: "LAUNCH"
+    ros_distro: humble
+    ws: "$HOME/smapper/software/ros_ws"
+    pkg_name: "smapper_bringup"
+    exec: "lidar.launch.py"
+    env:
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
 
-    - name: Argus Cameras (4x)
-      id: cameras_srv
-      auto_start: false
-      restart_on_failure: false
-      exec_type: "LAUNCH"
-      ros_distro: humble
-      ws: "$HOME/smapper/software/ros_ws"
-      pkg_name: "smapper_bringup"
-      exec: "argus_cameras.launch.py"
-      env:
-          RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+  - name: Argus Cameras (4x)
+    id: cameras_srv
+    auto_start: false
+    restart_on_failure: false
+    exec_type: "LAUNCH"
+    ros_distro: humble
+    ws: "$HOME/smapper/software/ros_ws"
+    pkg_name: "smapper_bringup"
+    exec: "argus_cameras.launch.py"
+    env:
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
 
-    - name: Device Documentation (MkDocs)
-      id: docs_srv
-      auto_start: false
-      restart_on_failure: false
-      cwd: "$HOME/smapper/"
-      cmd: "docker run --rm -p 8080:8000 -v ${PWD}:/docs squidfunk/mkdocs-material"
+  - name: Device Documentation (MkDocs)
+    id: docs_srv
+    auto_start: false
+    restart_on_failure: false
+    cwd: "$HOME/smapper/"
+    cmd: "docker run --rm -p 8080:8000 -v ${PWD}:/docs squidfunk/mkdocs-material"
 
 ros:
-    topics_to_monitor:
-        - /ouster/points
-        - /ouster/imu
-        - /camera/front_right/image_raw
-        - /camera/front_right/camera_info
-        - /camera/front_left/image_raw
-        - /camera/front_left/camera_info
-        - /camera/side_left/image_raw
-        - /camera/side_left/camera_info
-        - /camera/side_right/image_raw
-        - /camera/side_right/camera_info
+  topics_blacklist:
+    - /rosout
+    - /parameter_events
+  topics_to_monitor:
+    - /ouster/points
+    - /ouster/imu
+    - /camera/front_right/image_raw
+    - /camera/front_right/camera_info
+    - /camera/front_left/image_raw
+    - /camera/front_left/camera_info
+    - /camera/side_left/image_raw
+    - /camera/side_left/camera_info
+    - /camera/side_right/image_raw
+    - /camera/side_right/camera_info

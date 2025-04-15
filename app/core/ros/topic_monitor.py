@@ -20,8 +20,8 @@ class TopicStatus(Enum):
         OFFLINE: Topic is not receiving any messages
     """
 
-    ONLINE = "ONLINE"
-    OFFLINE = "OFFLINE"
+    ONLINE = "Online"
+    OFFLINE = "Offline"
 
 
 class TopicState(BaseModel):
@@ -33,14 +33,16 @@ class TopicState(BaseModel):
         hz: Frequency in hertz, indicating how often messages are published.
         msg_type: The type of message associated with the topic.
         last_rcv_ts: Timestamp (in nanoseconds) for the last received message.
-        message_count: Total number of messages that have been processed.
+        subscribers: Current number of subscribers of the topic
+        message_count: Total number of messages between polling.
     """
 
     status: TopicStatus = Field(default=TopicStatus.OFFLINE)
     hz: float = Field(default=0.0)
     msg_type: str
-    last_rcv_ts: float
+    prev_monitor_time: float
     subscribers: int
+    message_count: int
 
 
 class TopicMonitor(Node):
@@ -54,11 +56,12 @@ class TopicMonitor(Node):
     _topic_subs: Dict[str, Subscription]
     _topic_timeout: float  # seconds
     _topics_to_monitor: Set[str]
+    _blacklist: Set[str]
 
     def __init__(
         self,
         node_name: str,
-        topic_list: List[str],
+        blacklist: List[str],
         monitor_rate: float = 1,
         discover_rate: float = 2,
         topic_timeout: float = 3,
@@ -76,7 +79,8 @@ class TopicMonitor(Node):
         self._topic_states = defaultdict()
         self._topic_subs = defaultdict()
         self._topic_timeout = topic_timeout
-        self._topics_to_monitor = set(topic_list)
+        self._blacklist = set(blacklist)
+        self._topics_to_monitor = set()
 
         self.create_timer(monitor_rate, self._monitor_topics)
         self.create_timer(discover_rate, self._discover_new_topics)
@@ -179,10 +183,7 @@ class TopicMonitor(Node):
         untracked = []
 
         for topic, msg_type in available_topics:
-            if (
-                self._topic_states.get(topic) is None
-                and topic in self._topics_to_monitor
-            ):
+            if self._topic_states.get(topic) is None and topic not in self._blacklist:
                 untracked.append((topic, msg_type))
 
         self._subscribe_to_topics(untracked)
@@ -222,8 +223,9 @@ class TopicMonitor(Node):
                 status=TopicStatus.OFFLINE,
                 msg_type=msg_type_str,
                 hz=0,
-                last_rcv_ts=0,
+                prev_monitor_time=0,
                 subscribers=0,
+                message_count=0,
             )
 
             logger.info(
@@ -262,13 +264,10 @@ class TopicMonitor(Node):
             _: The incoming message (unused).
             topic_name: The name of the topic from which the message was received.
         """
-        current_time = time.time()
-        time_diff = current_time - self._topic_states[topic_name].last_rcv_ts
         state = self._topic_states[topic_name]
 
         state.status = TopicStatus.ONLINE
-        state.hz = 1.0 / time_diff if time_diff > 0 else 0
-        state.last_rcv_ts = current_time
+        state.message_count += 1
         state.subscribers = self.count_subscribers(topic_name) - 1
 
     def _monitor_topics(self) -> None:
@@ -279,9 +278,16 @@ class TopicMonitor(Node):
         """
         for topic_name, state in self._topic_states.items():
             current_time = time.time()
-            if current_time - state.last_rcv_ts > self._topic_timeout:
+
+            time_diff = current_time - state.prev_monitor_time
+            state.hz = state.message_count / time_diff
+
+            if state.message_count == 0:
                 state.status = TopicStatus.OFFLINE
                 state.hz = 0
+
+            state.message_count = 0
+            state.prev_monitor_time = current_time
 
             logger.debug(
                 f"Topic: {topic_name}, Status: {state.status}, Frequency: {state.hz:.2f} Hz"
