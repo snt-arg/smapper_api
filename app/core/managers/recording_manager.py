@@ -170,7 +170,7 @@ class RecordingManager:
         metadata, rosbag_path = self._curr_request
         rosbag_metadata = read_rosbag_metadata(rosbag_path)
 
-        tags = ",".join(metadata.tags) if metadata.tags else ""
+        tags = ",".join(set(metadata.tags)) if metadata.tags else ""
 
         rosbag = RosbagMetadataCreate(
             name=metadata.name,
