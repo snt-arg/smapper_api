@@ -1,5 +1,6 @@
-from typing import Annotated, List, TYPE_CHECKING
+from typing import Annotated, List, TYPE_CHECKING, Optional
 from fastapi import APIRouter, Depends
+from app.core.exceptions import RosNotAvailable
 from app.di import get_topic_monitor_runner
 from app.schemas.ros.topic import TopicStatus
 
@@ -17,11 +18,13 @@ router = APIRouter(prefix="/api/v1/ros")
     tags=["ros", "topics"],
 )
 def get_topics(
-    runner: Annotated["TopicMonitorRunner", Depends(get_topic_monitor_runner)],
+    runner: Annotated[
+        Optional["TopicMonitorRunner"], Depends(get_topic_monitor_runner)
+    ],
 ) -> List[TopicStatus]:
     if runner:
         return runner.get_topics()
-    return []
+    raise RosNotAvailable()
 
 
 @router.get(
@@ -31,11 +34,13 @@ def get_topics(
 )
 def get_topic(
     topic_name: str,
-    runner: Annotated["TopicMonitorRunner", Depends(get_topic_monitor_runner)],
+    runner: Annotated[
+        Optional["TopicMonitorRunner"], Depends(get_topic_monitor_runner)
+    ],
 ) -> TopicStatus | None:
     if runner:
         return runner.get_topic(topic_name)
-    return []
+    raise RosNotAvailable()
 
 
 @router.post(
@@ -45,10 +50,13 @@ def get_topic(
 )
 def add_topic(
     topic_name: str,
-    runner: Annotated["TopicMonitorRunner", Depends(get_topic_monitor_runner)],
+    runner: Annotated[
+        Optional["TopicMonitorRunner"], Depends(get_topic_monitor_runner)
+    ],
 ) -> None:
     if runner:
         runner.add_topic_to_monitor(topic_name)
+    raise RosNotAvailable()
 
 
 @router.delete(
@@ -58,7 +66,10 @@ def add_topic(
 )
 def remove_topic(
     topic_name: str,
-    runner: Annotated["TopicMonitorRunner", Depends(get_topic_monitor_runner)],
+    runner: Annotated[
+        Optional["TopicMonitorRunner"], Depends(get_topic_monitor_runner)
+    ],
 ) -> None:
     if runner:
         runner.remove_topic_from_monitor(topic_name)
+    raise RosNotAvailable()

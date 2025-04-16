@@ -61,6 +61,14 @@ class BagRecordingOnGoingException(Exception):
         super().__init__(self.detail)
 
 
+class RosNotAvailable(Exception):
+    """Raised when ros is not available."""
+
+    def __init__(self, detail: str = "No ROS distribution was found."):
+        self.detail = detail
+        super().__init__(detail)
+
+
 def init_exception_handlers(app: FastAPI):
     """Register exception handlers for custom exceptions in a FastAPI app.
 
@@ -75,7 +83,7 @@ def init_exception_handlers(app: FastAPI):
         """Handle NotYetImplementedException and return a 500 response."""
         return JSONResponse(
             status_code=500,
-            content={"message": f"{exc}"},
+            content={"message": f"{exc.detail}"},
         )
 
     @app.exception_handler(ServiceException)
@@ -98,4 +106,14 @@ def init_exception_handlers(app: FastAPI):
         return JSONResponse(
             status_code=500,
             content={"message": exc.detail},
+        )
+
+    @app.exception_handler(NotYetImplementedException)
+    async def ros_not_available_exception_handler(
+        request: Request, exc: RosNotAvailable
+    ):
+        """Handle RosNotAvailable and return a 500 response."""
+        return JSONResponse(
+            status_code=500,
+            content={"message": f"{exc.detail}"},
         )
