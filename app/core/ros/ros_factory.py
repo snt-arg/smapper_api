@@ -1,10 +1,12 @@
 from typing import List, TYPE_CHECKING
 
+from app.config.managers_settings import TopicMonitorSettings
+
 if TYPE_CHECKING:
     from .topic_monitor import TopicMonitorRunner
 
 
-def create_topic_monitor_runner(topics_to_monitor: List[str]) -> "TopicMonitorRunner":
+def create_topic_monitor_runner(settings: TopicMonitorSettings) -> "TopicMonitorRunner":
     """
     Create and return an instance of TopicMonitorRunner if ROS2 is available.
 
@@ -25,6 +27,6 @@ def create_topic_monitor_runner(topics_to_monitor: List[str]) -> "TopicMonitorRu
     try:
         from .topic_monitor import TopicMonitorRunner
 
-        return TopicMonitorRunner(topics_to_monitor)
+        return TopicMonitorRunner(**settings.model_dump())
     except ImportError:
         raise RuntimeError("ROS2 is not installed or available. Unable to import rclpy")

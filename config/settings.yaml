@@ -63,6 +63,9 @@ managers:
       topics_blacklist:
         - /rosout
         - /parameter_events
+      monitor_rate: 2 # Seconds
+      discover_rate: 3 # Seconds
+      idle_timeout: 5 # Seconds
 
     bag_recorder:
       storage_path: "$HOME/BagStorage/"

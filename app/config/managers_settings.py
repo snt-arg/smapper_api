@@ -8,6 +8,9 @@ from app.schemas import (
 
 class TopicMonitorSettings(BaseModel):
     topics_blacklist: List[str] = Field(default=[])
+    monitor_rate: float = Field(default=2)
+    discover_rate: float = Field(default=3)
+    idle_timeout: float = Field(default=5)
 
 
 class BagRecorderSettings(BaseModel):

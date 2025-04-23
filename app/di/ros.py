@@ -23,9 +23,7 @@ def get_topic_monitor_runner() -> Optional["TopicMonitorRunner"]:
     logger.debug("Get bag manager dependency called")
 
     try:
-        runner = create_topic_monitor_runner(
-            get_managers_settings().ros.topic_monitor.topics_blacklist
-        )
+        runner = create_topic_monitor_runner(get_managers_settings().ros.topic_monitor)
         return runner
     except RuntimeError:
         return None

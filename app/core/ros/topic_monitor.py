@@ -301,7 +301,13 @@ class TopicMonitorRunner:
     providing methods to start, stop, and interact with the monitored topic states.
     """
 
-    def __init__(self, topics_to_monitor: List[str]):
+    def __init__(
+        self,
+        topics_blacklist: List[str],
+        monitor_rate: float = 1,
+        discover_rate: float = 2,
+        idle_timeout: float = 3,
+    ):
         """Initialize the TopicMonitorRunner.
 
         Args:
@@ -312,7 +318,13 @@ class TopicMonitorRunner:
         self.topic_states: Dict[str, TopicState] = {}
 
         rclpy.init()
-        self._node = TopicMonitor("api_topic_monitor", topics_to_monitor)
+        self._node = TopicMonitor(
+            "api_topic_monitor",
+            topics_blacklist,
+            monitor_rate,
+            discover_rate,
+            idle_timeout,
+        )
 
     def start(self):
         """Start the TopicMonitorRunner thread."""
