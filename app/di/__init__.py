@@ -2,6 +2,7 @@ from .settings import (
     get_app_settings,
     get_device_settings,
     get_api_settings,
+    get_managers_settings,
 )
 
 from .services import (
@@ -17,6 +18,7 @@ __all__ = [
     "get_app_settings",
     "get_device_settings",
     "get_api_settings",
+    "get_managers_settings",
     "get_service_manager",
     "get_recording_manager",
     "get_topic_monitor_runner",

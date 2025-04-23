@@ -1,0 +1,87 @@
+api:
+  title: SMapper API
+  summary: API for the SMapper handheld device
+  version: 1.0.1
+  description: |
+    # SMapper API
+
+    **SMapper API** is the main interface for interacting with the handheld device. It provides endpoints to:
+
+    * List and inspect installed sensors
+    * Monitor ROS topics in real time
+    * Start, stop, and restart device services (including ROS nodes and launch files)
+    * Record and manage ROS bag files
+    * Check system status and metadata
+    * Trigger system-level actions like rebooting or powering off the onboard computer (WIP)
+
+    For the device documentation and detailed usage, visit the /docs endpoint
+
+  docs_url: /api/docs
+  openapi_url: /api/openapi.json
+  debug: true
+
+  allowed_origins:
+    - "http://localhost"
+    - "http://localhost:5173"
+    - "http://localhost:4173"
+
+managers:
+  services:
+    - name: Ouster LiDAR
+      id: lidar_srv
+      auto_start: false
+      restart_on_failure: false
+      exec_type: "LAUNCH"
+      ros_distro: humble
+      ws: "$HOME/smapper/software/ros_ws"
+      pkg_name: "smapper_bringup"
+      exec: "lidar.launch.py"
+      env:
+        RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+
+    - name: Argus Cameras (4x)
+      id: cameras_srv
+      auto_start: false
+      restart_on_failure: false
+      exec_type: "LAUNCH"
+      ros_distro: humble
+      ws: "$HOME/smapper/software/ros_ws"
+      pkg_name: "smapper_bringup"
+      exec: "argus_cameras.launch.py"
+      env:
+        RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+
+    - name: Device Documentation (MkDocs)
+      id: docs_srv
+      auto_start: false
+      restart_on_failure: false
+      cwd: "$HOME/smapper/"
+      cmd: "docker run --rm -p 8080:8000 -v ${PWD}:/docs squidfunk/mkdocs-material"
+
+  ros:
+    topic_monitor:
+      topics_blacklist:
+        - /rosout
+        - /parameter_events
+
+    bag_recorder:
+      storage_path: "$HOME/BagStorage/"
+
+# Metadata about the device
+device:
+  name: SMapper
+  revision: "2.1"
+
+  onboard_pc:
+    model: Jetson AGX Orin Development Kit
+
+  sensors:
+    - name: lidar
+      model: Ouster OS0-64
+      type: LIDAR
+      service_id: lidar_srv
+
+    - name: argus_cameras
+      model: e-CAM200_CUOAGX
+      type: CAMERA
+      service_id: cameras_srv

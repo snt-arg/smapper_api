@@ -27,9 +27,18 @@ app = FastAPI(
     version=api_settings.version,
     docs_url=api_settings.docs_url,
     openapi_url=api_settings.openapi_url,
-    openapi_tags=api_settings.openapi_tags,
     debug=api_settings.debug,
     lifespan=lifespan,
+    openapi_tags=[
+        {"services": {"description": "Start/stop/monitor services"}},
+        {"sensors": {"description": "Sensor state info"}},
+        {"recordings": {"description": "Start/stop recordings"}},
+        {"rosbags": {"description": "CRUD operations on rosbags recorded"}},
+        {"ros": {"description": "Ros related endpoints"}},
+        {"topics": {"description": "Ros2 topic monitoring info"}},
+        {"computer": {"description": "Information about onboard computer"}},
+        {"settings": {"description": "Check and modify api/device settings"}},
+    ],
 )
 
 

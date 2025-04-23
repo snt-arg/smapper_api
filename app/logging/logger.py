@@ -1,7 +1,7 @@
 import logging
 import coloredlogs
 
-LOG_LEVEL = "INFO"
+LOG_LEVEL = "DEBUG"
 
 level_styles = dict(
     spam=dict(color="green", faint=True),

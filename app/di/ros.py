@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Optional
 
 from app.core.managers import RecordingManager
 from app.core.ros.ros_factory import create_topic_monitor_runner
-from .settings import get_device_settings
+from .settings import get_managers_settings
 from app.logging import logger
 
 
@@ -23,7 +23,9 @@ def get_topic_monitor_runner() -> Optional["TopicMonitorRunner"]:
     logger.debug("Get bag manager dependency called")
 
     try:
-        runner = create_topic_monitor_runner(get_device_settings().ros.topics_blacklist)
+        runner = create_topic_monitor_runner(
+            get_managers_settings().ros.topic_monitor.topics_blacklist
+        )
         return runner
     except RuntimeError:
         return None
@@ -39,5 +41,5 @@ def get_recording_manager() -> RecordingManager:
         BagManager: Manages ROS bag recordings.
     """
     logger.debug("Get recording manager dependency called")
-    manager = RecordingManager(get_device_settings().bags_storage_path)
+    manager = RecordingManager(get_managers_settings().ros.bag_recorder.storage_path)
     return manager
