@@ -21,7 +21,8 @@ class RosbagService(Service):
         """
         self.topics = " ".join(topics_to_record) if len(topics_to_record) > 1 else "-a"
         self.output = os.path.join(output_dir, name)
-        cmd = f"ros2 bag record -o {self.output} {self.topics}"
+        # TODO: Change hardcoded ros distro to use the one from the config
+        cmd = f". /opt/ros/humble/setup.sh && ros2 bag record -o {self.output} {self.topics}"
         super().__init__(
             name="Rosbag Service",
             id="rosbag_service",
