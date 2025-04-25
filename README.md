@@ -29,5 +29,5 @@ uv run fastapi dev
 For production purposes use
 
 ```sh
-uv fastapi run
+uv run fastapi run
 ```
