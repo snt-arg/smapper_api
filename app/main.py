@@ -30,14 +30,14 @@ app = FastAPI(
     debug=api_settings.debug,
     lifespan=lifespan,
     openapi_tags=[
-        {"services": {"description": "Start/stop/monitor services"}},
-        {"sensors": {"description": "Sensor state info"}},
-        {"recordings": {"description": "Start/stop recordings"}},
-        {"rosbags": {"description": "CRUD operations on rosbags recorded"}},
-        {"ros": {"description": "Ros related endpoints"}},
-        {"topics": {"description": "Ros2 topic monitoring info"}},
-        {"computer": {"description": "Information about onboard computer"}},
-        {"settings": {"description": "Check and modify api/device settings"}},
+        {"name": "services", "description": "Start/stop/monitor services"},
+        {"name": "sensors", "description": "Sensor state info"},
+        {"name": "recordings", "description": "Start/stop recordings"},
+        {"name": "rosbags", "description": "CRUD operations on rosbags recorded"},
+        {"name": "ros", "description": "Ros related endpoints"},
+        {"name": "topics", "description": "Ros2 topic monitoring info"},
+        {"name": "computer", "description": "Information about onboard computer"},
+        {"name": "settings", "description": "Check and modify api/device settings"},
     ],
 )
 
