@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Dict, List
+from typing import Dict, List, Optional
 from app.schemas import (
     ServiceConfigSchema,
     RosServiceConfigSchema,
@@ -14,7 +14,12 @@ class TopicMonitorSettings(BaseModel):
 
 
 class BagRecorderSettings(BaseModel):
-    storage_path: str = Field(default="")
+    storage_dir: str = Field(default="")
+    ws: Optional[str] = Field(None, description="Path to the ROS workspace")
+    env: Optional[Dict[str, str]] = Field(
+        default=None,
+        description="Optional dictionary of environment variables for the service process",
+    )
 
 
 class RosManagers(BaseModel):

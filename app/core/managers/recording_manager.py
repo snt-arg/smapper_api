@@ -2,8 +2,9 @@ from enum import Enum
 import os
 from threading import Thread, Lock
 import time
-from typing import Tuple
+from typing import Dict, Optional, Tuple
 
+from app.core.exceptions import ServiceException
 from sqlalchemy.orm import Session
 
 from app.core.services import RosbagService
@@ -36,7 +37,6 @@ class RecordingState(Enum):
 class RecordingManager:
     _state: RecordingState
     _service: RosbagService | None
-    _rosbag_storage_dir: str
     _start_time: float
     _end_time: float
     _elapsed_time: float
@@ -49,9 +49,21 @@ class RecordingManager:
 
     _db_session: Session
 
-    def __init__(self, storage_dir: str):
+    _rosbag_storage_dir: str
+    _ws: Optional[str]
+    _env: Optional[Dict[str, str]]
+
+    def __init__(
+        self,
+        storage_dir: str,
+        ws: Optional[str],
+        env: Optional[Dict[str, str]] = None,
+    ):
         logger.info("Initializing Recording Manager")
         self._state = RecordingState.IDLE
+
+        self._ws = ws
+        self._env = env
 
         self._create_rosbag_storage_dir(storage_dir)
 
@@ -84,15 +96,24 @@ class RecordingManager:
         self._curr_request = (req, rosbag_path)
 
         # Start rosbag service
-        self._service = RosbagService(self._rosbag_storage_dir, rosbag_name, req.topics)
-        self._service.start()
-
-        # TODO: We need to check that the service is running and not crashed or terminated
+        self._service = RosbagService(
+            self._rosbag_storage_dir, rosbag_name, req.topics, self._ws, self._env
+        )
+        try:
+            self._service.start()
+        except ServiceException as e:
+            self._state = RecordingState.ERROR
+            raise e
 
         # Give some time to let ros2 bag create folder
-        # TODO: This needs some timeout
         while not os.path.exists(rosbag_path):
             time.sleep(0.5)
+
+        if not self._service.is_running():
+            logger.error("Rosbag service failed to start")
+            self._state = RecordingState.ERROR
+            raise Exception("Failed to start rosbag service")
+
         self._state = RecordingState.RECORDING
 
     def stop_recording(self) -> RosbagMetadata:

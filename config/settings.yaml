@@ -32,7 +32,6 @@ managers:
       auto_start: false
       restart_on_failure: false
       exec_type: "LAUNCH"
-      ros_distro: humble
       ws: "$HOME/smapper/software/ros_ws"
       pkg_name: "smapper_bringup"
       exec: "lidar.launch.py"
@@ -44,7 +43,6 @@ managers:
       auto_start: false
       restart_on_failure: false
       exec_type: "LAUNCH"
-      ros_distro: humble
       ws: "$HOME/smapper/software/ros_ws"
       pkg_name: "smapper_bringup"
       exec: "argus_cameras.launch.py"
@@ -68,7 +66,10 @@ managers:
       idle_timeout: 5 # Seconds
 
     bag_recorder:
-      storage_path: "$HOME/BagStorage/"
+      storage_dir: "$HOME/BagStorage/"
+      env:
+        RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      # ws: "$HOME/smapper/software/ros_ws"
 
 # Metadata about the device
 device:

@@ -59,11 +59,8 @@ class RosServiceConfigSchema(ServiceMetadataBase):
         description="Flag indicating if the ROS service should restart on failure",
     )
     exec_type: str = Field(description="Type of ROS execution ('NODE' or 'LAUNCH')")
-    ros_distro: str = Field(
-        description="The ROS distribution to use (e.g., 'humble', 'foxy')"
-    )
-    ws: str = Field(description="Path to the ROS workspace")
-    pkg_name: str = Field(
+    ws: Optional[str] = Field(None, description="Path to the ROS workspace")
+    pkg_name: Optional[str] = Field(
         description="Name of the ROS package containing the node or launch file"
     )
     exec: str = Field(description="The node or launch file to execute")

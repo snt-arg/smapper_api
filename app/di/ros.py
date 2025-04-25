@@ -39,5 +39,5 @@ def get_recording_manager() -> RecordingManager:
         BagManager: Manages ROS bag recordings.
     """
     logger.debug("Get recording manager dependency called")
-    manager = RecordingManager(get_managers_settings().ros.bag_recorder.storage_path)
+    manager = RecordingManager(**get_managers_settings().ros.bag_recorder.model_dump())
     return manager
