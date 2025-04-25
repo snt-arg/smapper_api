@@ -18,14 +18,16 @@ api:
 
   docs_url: /api/docs
   openapi_url: /api/openapi.json
-  debug: true
+  debug: false
 
+  # Use this to enable CORS for the API, for the given origins
   allowed_origins:
     - "http://localhost"
     - "http://localhost:5173"
     - "http://localhost:4173"
 
 managers:
+  # Add the services to be available in the API. Can be Basic Sevices or RosServices
   services:
     - name: Ouster LiDAR
       id: lidar_srv
