@@ -134,13 +134,10 @@ class Service:
         self.poll()
 
         if self._process is None or self._state is not ServiceState.ACTIVE:
-            logger.info(
+            logger.warning(
                 f"[service:{self._id}] Service is not ACTIVE. Ignoring request."
             )
-            raise ServiceException(
-                self._id,
-                "Service is not running.",
-            )
+            return
 
         self._terminate_child_processes(timeout)
 
