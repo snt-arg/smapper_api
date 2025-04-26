@@ -1,8 +1,7 @@
 import logging
 import coloredlogs
-from app.di import get_api_settings
 
-LOG_LEVEL = "DEBUG" if get_api_settings().debug else "INFO"
+LOG_LEVEL = "INFO"
 
 level_styles = dict(
     spam=dict(color="green", faint=True),
