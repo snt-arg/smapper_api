@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import Optional
 
 
 class TopicBase(BaseModel):
@@ -13,10 +14,13 @@ class TopicBase(BaseModel):
 class TopicStatus(TopicBase):
     """Extended topic model including status and frequency information."""
 
-    hz: float = Field(
-        description="The observed frequency (in Hz) at which messages are published."
+    hz: Optional[float] = Field(
+        default=None,
+        description="The observed frequency (in Hz) at which messages are published.",
     )
-    status: str = Field(
-        description="The current status of the topic. (Online, Offline)"
+    status: Optional[str] = Field(
+        default=None, description="The current status of the topic. (Online, Offline)"
     )
-    subscribers: int = Field(description="The current number of subscribers")
+    subscribers: Optional[int] = Field(
+        default=None, description="The current number of subscribers"
+    )

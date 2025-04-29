@@ -1,4 +1,4 @@
-from typing import Annotated, List, TYPE_CHECKING, Optional
+from typing import Annotated, List, TYPE_CHECKING, Optional, Tuple
 from fastapi import APIRouter, Depends
 from app.core.exceptions import RosNotAvailable
 from app.di import get_topic_monitor_runner
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/v1/ros")
 
 
 @router.get(
-    "/topics",
+    "/topics/",
     description="Get a list of current ROS topics being monitored, along with their state (status, frequency, message count, etc).",
     tags=["ros", "topics"],
 )
@@ -21,55 +21,10 @@ def get_topics(
     runner: Annotated[
         Optional["TopicMonitorRunner"], Depends(get_topic_monitor_runner)
     ],
+    all: bool = False,
 ) -> List[TopicStatus]:
     if runner:
-        return runner.get_topics()
-    raise RosNotAvailable()
-
-
-@router.get(
-    "/topics/{topic_name}",
-    description="Get the current monitoring state for a specific ROS topic by its name.",
-    tags=["ros", "topics"],
-)
-def get_topic(
-    topic_name: str,
-    runner: Annotated[
-        Optional["TopicMonitorRunner"], Depends(get_topic_monitor_runner)
-    ],
-) -> TopicStatus | None:
-    if runner:
-        return runner.get_topic(topic_name)
-    raise RosNotAvailable()
-
-
-@router.post(
-    "/topics/",
-    description="Add a new topic to be monitored. If the topic becomes available, it will be automatically subscribed to.",
-    tags=["ros", "topics"],
-)
-def add_topic(
-    topic_name: str,
-    runner: Annotated[
-        Optional["TopicMonitorRunner"], Depends(get_topic_monitor_runner)
-    ],
-) -> None:
-    if runner:
-        runner.add_topic_to_monitor(topic_name)
-    raise RosNotAvailable()
-
-
-@router.delete(
-    "/topics/",
-    description="Remove a topic from the monitoring list. If subscribed, it will be unsubscribed and cleaned up.",
-    tags=["ros", "topics"],
-)
-def remove_topic(
-    topic_name: str,
-    runner: Annotated[
-        Optional["TopicMonitorRunner"], Depends(get_topic_monitor_runner)
-    ],
-) -> None:
-    if runner:
-        runner.remove_topic_from_monitor(topic_name)
+        if all:
+            return runner.get_all_topics()
+        return runner.get_tracked_topic_states()
     raise RosNotAvailable()
