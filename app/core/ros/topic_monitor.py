@@ -299,8 +299,8 @@ class TopicMonitorRunner:
         while rclpy.ok() and self._running:
             try:
                 rclpy.spin_once(self._node)
-            except Exception as e:
-                logger.error("Failed to spin Topic Monitor Ros node", e)
+            except:
+                logger.error("Failed to spin Topic Monitor Ros node")
                 break
         if self._node:
             try:
