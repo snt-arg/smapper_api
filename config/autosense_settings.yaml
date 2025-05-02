@@ -1,11 +1,11 @@
 api:
-    title: SMapper API
-    summary: API for the SMapper handheld device
+    title: Autosense API
+    summary: API for the Autosense handheld device
     version: 1.0.1
     description: |
-        # SMapper API
+        # Autosense API
 
-        **SMapper API** is the main interface for interacting with the handheld device. It provides endpoints to:
+        **Autosense API** is the main interface for interacting with the handheld device. It provides endpoints to:
 
         * List and inspect installed sensors
         * Monitor ROS topics in real time
@@ -34,44 +34,60 @@ managers:
           auto_start: false
           restart_on_failure: false
           exec_type: "LAUNCH"
-          ws: "$HOME/smapper/software/ros_ws"
-          pkg_name: "smapper_bringup"
+          ws: "$HOME/AutoSense/ros_ws"
+          pkg_name: "autosense_bringup"
           exec: "lidar.launch.py"
           env:
               RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
 
-        - name: Argus Cameras (4x)
-          id: cameras_srv
+        - name: Realsense D435i Camera
+          id: realsense_camera_srv
           auto_start: false
           restart_on_failure: false
           exec_type: "LAUNCH"
-          ws: "$HOME/smapper/software/ros_ws"
+          ws: "$HOME/AutoSense/ros_ws"
           pkg_name: "smapper_bringup"
-          exec: "argus_cameras.launch.py"
+          exec: "rs_launch.py"
           env:
               RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
 
-        - name: Device Documentation (MkDocs)
-          id: docs_srv
+        - name: Odometry (FastLIO)
+          id: odom_gen_srv
           auto_start: false
           restart_on_failure: false
-          cwd: "$HOME/smapper/"
-          cmd: "docker run --rm -p 8080:8000 -v ${PWD}:/docs squidfunk/mkdocs-material"
+          exec_type: "LAUNCH"
+          ws: "$HOME/ros_ws"
+          pkg_name: "fast_lio"
+          exec: "mapping.launch.py rviz:=false config_file:=ouster64.yaml"
+          env:
+              RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+
+        - name: SGraphs 2.0
+          id: s_graphs_srv
+          auto_start: false
+          restart_on_failure: false
+          exec_type: "LAUNCH"
+          ws: "$HOME/ros_ws"
+          pkg_name: "lidar_situational_graphs"
+          exec: "s_graphs_launch.py lidar_topic:=/cloud/undistorted imu_topic:=/ouster/imu base_frame:=base_link compute_odom:=false"
+          env:
+              RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
 
     ros:
         topic_monitor:
             topics_blacklist:
-                - /rosout
+                - /rosout*
                 - /parameter_events
+                - ^/ouster/(?!points$|imu$).*
+                - ^/camera/.*/(?!.*image_raw$).*
             monitor_rate: 2 # Seconds
-            discover_rate: 3 # Seconds
+            discover_rate: 5 # Seconds
             idle_timeout: 5 # Seconds
 
         bag_recorder:
             storage_dir: "$HOME/BagStorage/"
             env:
                 RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-            # ws: "$HOME/smapper/software/ros_ws"
 
 # Metadata about the device
 device:
