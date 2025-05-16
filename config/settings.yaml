@@ -60,6 +60,12 @@ managers:
 
     ros:
         topic_monitor:
+            topics_to_monitor:
+                - /ouster/points
+                - /camera/front_left/image_raw
+                - /camera/front_right/image_raw
+                - /camera/side_left/image_raw
+                - /camera/side_right/image_raw
             topics_blacklist:
                 - /rosout
                 - /parameter_events

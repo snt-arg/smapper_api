@@ -59,14 +59,17 @@ class TopicMonitor(Node):
     _to_untrack_topics: Set[str]
     _available_topics: Set[Tuple[str, str]]
     _accepted_timeout: float
+    _topics_to_monitor: Set[str]
 
     def __init__(
         self,
+        topics_to_monitor: List[str],
         blacklist: List[str],
         discovery_polling_interval: float = 5,
         monitoring_polling_interval: float = 2,
         accepted_timeout: float = 3,
     ):
+        self._topics_to_monitor = set(topics_to_monitor)
         self._blacklist = set(blacklist)
         self._tracked_topics = defaultdict()
         self._available_topics = set()
@@ -98,7 +101,7 @@ class TopicMonitor(Node):
         ]
 
     def get_all_topics(self) -> List[TopicStatusSchema]:
-        """Gets all topics that are currently available, both tracked and untracked.
+        """Gets all topics that are currently available (not blaclisted), both tracked and untracked.
 
         If a topic is being tracked, it's additional infomation becomes available,
         like hz.
@@ -108,6 +111,8 @@ class TopicMonitor(Node):
         """
         topics = []
         for name, msg_type in self._available_topics:
+            if name in self._blacklist:
+                continue
             if name in self._tracked_topics:
                 topic = self._tracked_topics[name]
                 topics.append(
@@ -137,6 +142,7 @@ class TopicMonitor(Node):
             if (
                 self._is_topic_blacklisted(topic_name)
                 or topic_name in self._tracked_topics
+                or topic_name not in self._topics_to_monitor
             ):
                 continue
             if not self._tracked_topics.get(topic_name):
@@ -244,6 +250,7 @@ class TopicMonitorRunner:
 
     def __init__(
         self,
+        topics_to_monitor: List[str],
         topics_blacklist: List[str],
         monitor_rate: float = 1,
         discover_rate: float = 2,
@@ -260,7 +267,7 @@ class TopicMonitorRunner:
 
         rclpy.init()
         self._node = TopicMonitor(
-            topics_blacklist, monitor_rate, discover_rate, idle_timeout
+            topics_to_monitor, topics_blacklist, monitor_rate, discover_rate, idle_timeout
         )
 
     def start(self):

@@ -7,6 +7,7 @@ from app.schemas import (
 
 
 class TopicMonitorSettings(BaseModel):
+    topics_to_monitor: List[str] = Field(default=[])
     topics_blacklist: List[str] = Field(default=[])
     monitor_rate: float = Field(default=2)
     discover_rate: float = Field(default=3)
