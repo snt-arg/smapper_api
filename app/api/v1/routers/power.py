@@ -1,3 +1,4 @@
+import subprocess
 from fastapi import APIRouter
 from app.core.exceptions import NotYetImplementedException
 
@@ -11,9 +12,7 @@ router = APIRouter(prefix="/api/v1/computer")
     tags=["computer"],
 )
 def poweroff_computer():
-    raise NotYetImplementedException(
-        "Endpoint /power/poweroff has not yet been implemented"
-    )
+    subprocess.call("poweroff")
 
 
 @router.post(
@@ -22,6 +21,4 @@ def poweroff_computer():
     tags=["computer"],
 )
 def reboot_computer():
-    raise NotYetImplementedException(
-        "Endpoint /power/reboot has not yet been implemented"
-    )
+    subprocess.call("reboot")
