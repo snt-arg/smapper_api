@@ -22,6 +22,7 @@ api:
 
     # Use this to enable CORS for the API, for the given origins
     allowed_origins:
+        - "http://10.42.0.1"
         - "http://localhost"
         - "http://localhost:5173"
         - "http://localhost:4173"
@@ -39,6 +40,7 @@ managers:
           exec: "lidar.launch.py"
           env:
               RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+              CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
 
         - name: Argus Cameras (4x)
           id: cameras_srv
@@ -50,18 +52,25 @@ managers:
           exec: "argus_cameras.launch.py"
           env:
               RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+              CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
 
-        - name: Device Documentation (MkDocs)
-          id: docs_srv
+        - name: Odometry
+          id: odometry_srv
           auto_start: false
           restart_on_failure: false
-          cwd: "$HOME/smapper/"
-          cmd: "docker run --rm -p 8080:8000 -v ${PWD}:/docs squidfunk/mkdocs-material"
+          exec_type: "LAUNCH"
+          ws: "$HOME/smapper/software/ros_ws"
+          pkg_name: "mola_lidar_odometry"
+          exec: "ros2-lidar-odometry.launch.py lidar_topic_name:=ouster/points imu_topic_name:=/ouster/imu use_state_estimator:=True publish_localization_following_rep105:=False enforce_planar_motion:=True use_mola_gui:=False use_rviz:=False mola_lo_reference_frame:=odom mola_state_estimator_reference_frame:=odom"
+          env:
+              RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+              CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
 
     ros:
         topic_monitor:
             topics_to_monitor:
                 - /ouster/points
+                - /ouster/imu
                 - /camera/front_left/image_raw
                 - /camera/front_right/image_raw
                 - /camera/side_left/image_raw
@@ -74,10 +83,11 @@ managers:
             idle_timeout: 5 # Seconds
 
         bag_recorder:
-            storage_dir: "$HOME/BagStorage/"
+            storage_dir: "/bags"
             env:
                 RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-            # ws: "$HOME/smapper/software/ros_ws"
+                CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
+            ws: "$HOME/smapper/software/ros_ws"
 
 # Metadata about the device
 device:
