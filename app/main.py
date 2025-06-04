@@ -13,6 +13,7 @@ from app.api.v1 import (
     ros_router,
     recordings_router,
     settings_router,
+    api_router,
 )
 
 init_db()
@@ -30,6 +31,7 @@ app = FastAPI(
     debug=api_settings.debug,
     lifespan=lifespan,
     openapi_tags=[
+        {"name": "api", "description": "Endpoints related to the API"},
         {"name": "services", "description": "Start/stop/monitor services"},
         {"name": "sensors", "description": "Sensor state info"},
         {"name": "recordings", "description": "Start/stop recordings"},
@@ -50,6 +52,7 @@ app.include_router(power_router)
 app.include_router(ros_router)
 app.include_router(recordings_router)
 app.include_router(settings_router)
+app.include_router(api_router)
 
 # Setup CORS Middleware.
 app.add_middleware(
