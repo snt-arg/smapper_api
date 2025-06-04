@@ -1,7 +1,7 @@
 api:
     title: SMapper API
     summary: API for the SMapper handheld device
-    version: 1.0.1
+    version: 0.2.0
     description: |
         # SMapper API
 
@@ -16,8 +16,8 @@ api:
 
         For the device documentation and detailed usage, visit the /docs endpoint
 
-    docs_url: /api/docs
-    openapi_url: /api/openapi.json
+    docs_url: /docs
+    openapi_url: /openapi.json
     debug: false
 
     # Use this to enable CORS for the API, for the given origins
@@ -83,7 +83,7 @@ managers:
             idle_timeout: 5 # Seconds
 
         bag_recorder:
-            storage_dir: "/bags"
+            storage_dir: "./bags"
             env:
                 RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
                 CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
