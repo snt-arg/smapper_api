@@ -65,6 +65,15 @@ managers:
           env:
               RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
               CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
+        - name: Rosboard
+          id: rosboard_srv
+          auto_start: true
+          restart_on_failure: false
+          cwd: $HOME/smapper/software/ros_ws/src/rosboard/
+          cmd: "./run"
+          env:
+              RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+              CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
 
     ros:
         topic_monitor:
