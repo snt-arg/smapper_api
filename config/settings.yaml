@@ -67,7 +67,7 @@ managers:
               CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
         - name: Rosboard
           id: rosboard_srv
-          auto_start: true
+          auto_start: false
           restart_on_failure: false
           cwd: $HOME/smapper/software/ros_ws/src/rosboard/
           cmd: "./run"
