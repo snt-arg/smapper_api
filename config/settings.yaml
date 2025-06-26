@@ -1,7 +1,7 @@
 api:
     title: SMapper API
     summary: API for the SMapper handheld device
-    version: 0.2.0
+    version: 0.2.1
     description: |
         # SMapper API
 
@@ -87,6 +87,8 @@ managers:
             topics_blacklist:
                 - /rosout
                 - /parameter_events
+                - .*/compressed
+                - .*/theora
             monitor_rate: 2 # Seconds
             discover_rate: 3 # Seconds
             idle_timeout: 5 # Seconds
@@ -97,6 +99,28 @@ managers:
                 RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
                 CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
             ws: "$HOME/smapper/software/ros_ws"
+            presets:
+                cameras:
+                    - /camera/front_left/image_raw
+                    - /camera/front_left/camera_info
+                    - /camera/front_right/image_raw
+                    - /camera/front_right/camera_info
+                    - /camera/side_left/image_raw
+                    - /camera/side_left/camera_info
+                    - /camera/side_right/image_raw
+                    - /camera/side_right/camera_info
+                lidar:
+                    - /ouster/points
+                    - /ouster/imu
+                realsense:
+                    - /camera/realsense/color/image_raw
+                    - /camera/realsense/color/camera_info
+                    - /camera/realsense/imu
+                    - /camera/realsense/depth/points
+                    - /camera/realsense/depth/align # TODO: verify correct topic name. missing camera infos
+                tf:
+                    - /tf_static
+                    - /tf
 
 # Metadata about the device
 device:
