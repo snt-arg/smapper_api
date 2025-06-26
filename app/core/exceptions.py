@@ -1,4 +1,5 @@
 from typing import Optional
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
@@ -108,7 +109,7 @@ def init_exception_handlers(app: FastAPI):
             content={"message": exc.detail},
         )
 
-    @app.exception_handler(NotYetImplementedException)
+    @app.exception_handler(RosNotAvailable)
     async def ros_not_available_exception_handler(
         request: Request, exc: RosNotAvailable
     ):
