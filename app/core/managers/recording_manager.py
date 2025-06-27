@@ -1,17 +1,20 @@
-from enum import Enum
 import os
-from threading import Thread, Lock
 import time
-from typing import Dict, Optional, Tuple
+from enum import Enum
+from threading import Lock, Thread
+from typing import Dict, List, Optional, Tuple
 
-from app.core.exceptions import ServiceException
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import ServiceException
 from app.core.services import RosbagService
+from app.crud.rosbag import create_rosbag
+from app.db.database import db_session
+from app.logging import logger
 from app.schemas.recording import (
     RecordingMetadata,
-    RecordingStatus,
     RecordingStartRequest,
+    RecordingStatus,
 )
 from app.schemas.ros.rosbag import RosbagMetadata, RosbagMetadataCreate
 from app.utils.rosbag import (
@@ -19,9 +22,6 @@ from app.utils.rosbag import (
     get_rosbag_size,
     read_rosbag_metadata,
 )
-from app.db.database import db_session
-from app.crud.rosbag import create_rosbag
-from app.logging import logger
 
 
 class RecordingState(Enum):
@@ -52,18 +52,21 @@ class RecordingManager:
     _rosbag_storage_dir: str
     _ws: Optional[str]
     _env: Optional[Dict[str, str]]
+    _presets: Optional[Dict[str, List[str]]]
 
     def __init__(
         self,
         storage_dir: str,
         ws: Optional[str],
         env: Optional[Dict[str, str]] = None,
+        presets: Optional[Dict[str, List[str]]] = None,
     ):
         logger.info("Initializing Recording Manager")
         self._state = RecordingState.IDLE
 
         self._ws = ws
         self._env = env
+        self._presets = presets
 
         self._create_rosbag_storage_dir(storage_dir)
 
@@ -134,6 +137,9 @@ class RecordingManager:
         self._state = RecordingState.IDLE
 
         return rosbag
+
+    def get_presets(self) -> Dict[str, List[str]]:
+        return self._presets if self._presets else {}
 
     def get_status(self) -> RecordingStatus:
         if self._state is RecordingState.RECORDING and self._curr_request:

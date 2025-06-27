@@ -1,10 +1,11 @@
 from typing import Annotated
+
 from fastapi import APIRouter, Depends
+
 from app.core.managers import RecordingManager
 from app.di import get_recording_manager
-from app.schemas.recording import RecordingStatus, RecordingStartRequest
+from app.schemas.recording import RecordingStartRequest, RecordingStatus
 from app.schemas.ros.rosbag import RosbagMetadata
-
 
 router = APIRouter(prefix="/api/v1/recording")
 
@@ -45,3 +46,14 @@ def get_bag_recording_state(
     manager: Annotated[RecordingManager, Depends(get_recording_manager)],
 ):
     return manager.get_status()
+
+
+@router.get(
+    "/presets",
+    description="Get a dictionary of presets for topics to be used",
+    tags=["recordings"],
+)
+def get_recording_presets(
+    manager: Annotated[RecordingManager, Depends(get_recording_manager)],
+):
+    return manager.get_presets()

@@ -1,8 +1,10 @@
-from pydantic import BaseModel, Field
 from typing import Dict, List, Optional
+
+from pydantic import BaseModel, Field
+
 from app.schemas import (
-    ServiceConfigSchema,
     RosServiceConfigSchema,
+    ServiceConfigSchema,
 )
 
 
@@ -20,6 +22,10 @@ class BagRecorderSettings(BaseModel):
     env: Optional[Dict[str, str]] = Field(
         default=None,
         description="Optional dictionary of environment variables for the service process",
+    )
+    presets: Optional[Dict[str, List[str]]] = Field(
+        default=None,
+        description="Optional dictionary of topic presets used for recording",
     )
 
 
