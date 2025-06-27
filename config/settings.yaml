@@ -54,6 +54,18 @@ managers:
               RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
               CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
 
+        - name: Intel Realsense D435i
+          id: realsense_srv 
+          auto_start: false
+          restart_on_failure: false
+          exec_type: "LAUNCH"
+          ws: "$HOME/smapper/software/ros_ws"
+          pkg_name: "smapper_bringup"
+          exec: "realsense.launch.py"
+          env:
+              RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+              CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
+
         - name: Odometry
           id: odometry_srv
           auto_start: false
@@ -65,6 +77,7 @@ managers:
           env:
               RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
               CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
+
         - name: Rosboard
           id: rosboard_srv
           auto_start: false
@@ -92,7 +105,7 @@ managers:
             idle_timeout: 5 # Seconds
 
         bag_recorder:
-            storage_dir: "./bags"
+            storage_dir: "/bags"
             env:
                 RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
                 CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
@@ -116,3 +129,8 @@ device:
           model: e-CAM200_CUOAGX
           type: CAMERA
           service_id: cameras_srv
+
+        - name: realsense_d435i
+          model: Intel Realsense D435i
+          type: CAMERA
+          service_id: realsense_srv
