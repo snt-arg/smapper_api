@@ -78,9 +78,9 @@ managers:
               RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
               CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
 
-        - name: Rosboard
+        - name: Rosboard (Visualizer)
           id: rosboard_srv
-          auto_start: false
+          auto_start: true
           restart_on_failure: false
           cwd: $HOME/smapper/software/ros_ws/src/rosboard/
           cmd: "./run"
@@ -93,15 +93,18 @@ managers:
             topics_to_monitor:
                 - /ouster/points
                 - /ouster/imu
-                - /camera/front_left/image_raw
-                - /camera/front_right/image_raw
-                - /camera/side_left/image_raw
-                - /camera/side_right/image_raw
-            topics_blacklist:
+                - "*/image_raw"
+                - /state_estimator/pose
+            topics_blacklist: # Use shell style regex expressions
                 - /rosout
                 - /parameter_events
-                - .*/compressed
-                - .*/theora
+                - "*/compressed"
+                - "*/compressedDepth"
+                - "*/theora"
+                - "*/status"
+                - "*/feedback"
+                - "*/metadata"
+                - "*/sample" # Realsense IMU samples
             monitor_rate: 2 # Seconds
             discover_rate: 3 # Seconds
             idle_timeout: 5 # Seconds
@@ -129,11 +132,16 @@ managers:
                     - /camera/realsense/color/image_raw
                     - /camera/realsense/color/camera_info
                     - /camera/realsense/imu
-                    - /camera/realsense/depth/points
-                    - /camera/realsense/depth/align # TODO: verify correct topic name. missing camera infos
+                    - /camera/realsense/depth/color/points
+                    - /camera/realsense/depth/camera_info
+                    - /camera/realsense/aligned_depth_to_color/image_raw
+                    - /camera/realsense/aligned_depth_to_color/camera_info
+                    # - /camera/realsense/depth/image_rect_raw
                 tf:
                     - /tf_static
                     - /tf
+                odometry:
+                    - /state_estimator/pose
 
 # Metadata about the device
 device:
