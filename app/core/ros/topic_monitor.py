@@ -101,7 +101,7 @@ class TopicMonitor(Node):
         ]
 
     def get_all_topics(self) -> List[TopicStatusSchema]:
-        """Gets all topics that are currently available (not blaclisted), both tracked and untracked.
+        """Gets all topics that are currently available (not blacklisted), both tracked and untracked.
 
         If a topic is being tracked, it's additional infomation becomes available,
         like hz.
