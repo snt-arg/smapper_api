@@ -1,4 +1,4 @@
-import re
+from fnmatch import fnmatch
 from collections import defaultdict
 import threading
 from enum import Enum
@@ -40,7 +40,7 @@ class TopicState(BaseModel):
     """
 
     status: TopicStatus = Field(default=TopicStatus.OFFLINE)
-    hz: float = Field(default=0.0)
+    hz: float = Field(defaultopict=0.0)
     msg_type: str
     prev_monitor_time: float
     subscribers: int
@@ -111,7 +111,7 @@ class TopicMonitor(Node):
         """
         topics = []
         for name, msg_type in self._available_topics:
-            if name in self._blacklist:
+            if self._is_topic_blacklisted(name):
                 continue
             if name in self._tracked_topics:
                 topic = self._tracked_topics[name]
@@ -141,8 +141,8 @@ class TopicMonitor(Node):
         for topic_name, msg_type in self._available_topics:
             if (
                 self._is_topic_blacklisted(topic_name)
+                or not self._is_topic_to_monitor(topic_name)
                 or topic_name in self._tracked_topics
-                or topic_name not in self._topics_to_monitor
             ):
                 continue
             if not self._tracked_topics.get(topic_name):
@@ -236,7 +236,13 @@ class TopicMonitor(Node):
 
     def _is_topic_blacklisted(self, name: str) -> bool:
         for blacklisted in self._blacklist:
-            if re.match(name, blacklisted):
+            if fnmatch(name, blacklisted):
+                return True
+        return False
+
+    def _is_topic_to_monitor(self, name: str) -> bool:
+        for topic in self._topics_to_monitor:
+            if fnmatch(name, topic):
                 return True
         return False
 
