@@ -96,7 +96,6 @@ managers:
                 - "*/image_raw"
                 - /state_estimator/pose
             topics_blacklist: # Use shell style regex expressions
-                - /rosout
                 - /parameter_events
                 - "*/compressed"
                 - "*/compressedDepth"
@@ -142,6 +141,8 @@ managers:
                     - /tf
                 odometry:
                     - /state_estimator/pose
+                logging:
+                    - /rosout
 
 # Metadata about the device
 device:
