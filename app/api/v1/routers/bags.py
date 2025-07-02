@@ -1,10 +1,15 @@
+import os
+import zipstream
 from typing import Annotated, List
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from app.db.database import get_db
-from app.schemas.ros.rosbag import RosbagMetadata, RosbagMetadataUpdate
-from app.crud import rosbag as crud
 
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session
+
+from app.crud import rosbag as crud
+from app.db.database import get_db
+from app.di import get_api_settings
+from app.schemas.ros.rosbag import RosbagMetadata, RosbagMetadataUpdate
 
 router = APIRouter(prefix="/api/v1/rosbags")
 
@@ -56,3 +61,34 @@ def delete_rosbag_route(rosbag_id: int, db: Annotated[Session, Depends(get_db)])
     if not deleted:
         raise HTTPException(status_code=404, detail="Rosbag not found")
     return {"message": "Deleted"}
+
+
+@router.get(
+    "/{rosbag_id}/download",
+    tags=["rosbags"],
+)
+async def download_bag(rosbag_id: int, db: Annotated[Session, Depends(get_db)]):
+    bag = crud.get_rosbag(db, rosbag_id)
+
+    if not bag:
+        raise HTTPException(status_code=404, detail="Rosbag not found")
+
+    bag_path = str(bag.rosbag_path)
+
+    # USE compression = ZIP_DEFLATED for applying compression (can lead to slow speeds)
+    content_stream = zipstream.ZipFile(mode="w", compression=zipstream.ZIP_STORED)
+
+    # Walk the rosbag files, metadata & db and prepare them for streaming
+    for root, _, files in os.walk(bag_path):
+        for file in files:
+            full_path = os.path.join(root, file)
+            arcname = os.path.relpath(full_path, start=bag_path)
+            content_stream.write(
+                full_path, arcname
+            )  # this queues the file for streaming
+
+    return StreamingResponse(
+        content_stream,  # type: ignore
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="{bag.name}.zip"'},
+    )
