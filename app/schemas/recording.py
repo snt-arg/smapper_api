@@ -26,6 +26,12 @@ class RecordingStatus(BaseModel):
         default=None, description="Metadata information for the recording"
     )
 
+class BagRecorderCompressionSettings(BaseModel):
+    enabled: bool = Field(default=False)
+    format: str = Field(default="zstd")
+    mode: str = Field(default="file")
+
+
 
 class RecordingStartRequest(BaseModel):
     """Request schema for starting a new rosbag recording."""
@@ -38,4 +44,8 @@ class RecordingStartRequest(BaseModel):
     tags: Optional[List[str]] = Field(
         default=None,
         description="Optional list of tags to classify or label the recording",
+    )
+    compression: Optional[BagRecorderCompressionSettings] = Field(
+        default=BagRecorderCompressionSettings,
+        description="Compression settings to be used by ros2 bag recorder"
     )

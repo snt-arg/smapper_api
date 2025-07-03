@@ -2,6 +2,7 @@ import os
 from typing import List, Optional, Dict
 
 from app.logging import logger
+from app.schemas.recording import BagRecorderCompressionSettings
 
 from .ros_service import RosService
 
@@ -18,6 +19,7 @@ class RosbagService(RosService):
         output_dir: str,
         name: str,
         topics_to_record: List[str],
+        compression: Optional[BagRecorderCompressionSettings],
         ws: Optional[str],
         env: Optional[Dict[str, str]] = None,
     ) -> None:
@@ -30,7 +32,11 @@ class RosbagService(RosService):
         """
         self.topics = " ".join(topics_to_record) if len(topics_to_record) > 0 else "-a"
         self.output = os.path.join(output_dir, name)
-        cmd = f"record -o {self.output} {self.topics}"
+
+        if compression and compression.enabled:
+            cmd = f"record --compression-mode {compression.mode} --compression-format {compression.format} -o {self.output} {self.topics}"
+        else:
+            cmd = f"record -o {self.output} {self.topics}"
         logger.info(f"Rosbag command: {cmd}")
         super().__init__(
             id="rosbag_service",

@@ -100,7 +100,7 @@ class RecordingManager:
 
         # Start rosbag service
         self._service = RosbagService(
-            self._rosbag_storage_dir, rosbag_name, req.topics, self._ws, self._env
+            self._rosbag_storage_dir, rosbag_name, req.topics, req.compression, self._ws, self._env
         )
         try:
             self._service.start()
