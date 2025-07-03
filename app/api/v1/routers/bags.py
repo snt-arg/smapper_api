@@ -1,4 +1,5 @@
 import os
+import time
 import zipstream
 from typing import Annotated, List
 
@@ -10,6 +11,7 @@ from app.crud import rosbag as crud
 from app.db.database import get_db
 from app.di import get_api_settings
 from app.schemas.ros.rosbag import RosbagMetadata, RosbagMetadataUpdate
+from app.utils.files import calculate_total_size
 
 router = APIRouter(prefix="/api/v1/rosbags")
 
@@ -76,19 +78,35 @@ async def download_bag(rosbag_id: int, db: Annotated[Session, Depends(get_db)]):
     bag_path = str(bag.rosbag_path)
 
     # USE compression = ZIP_DEFLATED for applying compression (can lead to slow speeds)
-    content_stream = zipstream.ZipFile(mode="w", compression=zipstream.ZIP_STORED)
+    content_stream = zipstream.ZipFile(mode="w", compression=zipstream.ZIP_STORED, allowZip64=True)
+
+    # Setting minimum epoch time for ZIP to work
+    safe_epoch = time.mktime((1980, 1, 1, 0, 0, 0, 0, 0, 0))
 
     # Walk the rosbag files, metadata & db and prepare them for streaming
     for root, _, files in os.walk(bag_path):
         for file in files:
             full_path = os.path.join(root, file)
             arcname = os.path.relpath(full_path, start=bag_path)
+
+            # Get current modified time
+            stat = os.stat(full_path)
+            if stat.st_mtime < safe_epoch:
+                # Overwrite with a safe timestamp
+                os.utime(full_path, (safe_epoch, safe_epoch))
+
             content_stream.write(
                 full_path, arcname
             )  # this queues the file for streaming
 
+    # INFO: Disabling total_size since it will fail as the size is not the same as 
+    # the final transmitted file
+    # total_size = calculate_total_size(bag_path)
     return StreamingResponse(
         content_stream,  # type: ignore
         media_type="application/zip",
-        headers={"Content-Disposition": f'attachment; filename="{bag.name}.zip"'},
+        headers={
+            "Content-Disposition": f'attachment; filename="{bag.name}.zip"',
+             # "Content-Length": str(total_size)
+        }
     )
