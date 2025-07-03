@@ -88,6 +88,18 @@ managers:
               RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
               CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
 
+        - name: Device Sensors Transforms
+          id: transorms_srv
+          auto_start: true
+          restart_on_failure: false
+          exec_type: "LAUNCH"
+          ws: "$HOME/smapper/software/ros_ws"
+          pkg_name: "smapper_bringup"
+          exec: "handheld_device_tf.launch.py"
+          env:
+              RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+              CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
+
     ros:
         topic_monitor:
             topics_to_monitor:
