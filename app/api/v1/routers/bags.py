@@ -23,7 +23,7 @@ router = APIRouter(prefix="/api/v1/rosbags")
     tags=["rosbags"],
 )
 def read_bags(db: Annotated[Session, Depends(get_db)]):
-    return crud.get_rosbags(db)
+    return crud.get_rosbags(db, limit=None)
 
 
 @router.get(

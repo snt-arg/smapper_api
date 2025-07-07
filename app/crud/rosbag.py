@@ -1,5 +1,5 @@
 import shutil
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import Session
 from app.models.rosbag_metadata import RosbagMetadata
 from app.models.rosbag_topic import RosbagTopic
@@ -21,7 +21,7 @@ def create_rosbag(db: Session, rosbag: RosbagMetadataCreate) -> RosbagMetadata:
     return db_rosbag
 
 
-def get_rosbags(db: Session, skip: int = 0, limit: int = 10) -> List[RosbagMetadata]:
+def get_rosbags(db: Session, skip: int = 0, limit: Optional[int] = None) -> List[RosbagMetadata]:
     return db.query(RosbagMetadata).offset(skip).limit(limit).all()
 
 
