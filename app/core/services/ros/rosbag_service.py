@@ -34,9 +34,9 @@ class RosbagService(RosService):
         self.output = os.path.join(output_dir, name)
 
         if compression and compression.enabled:
-            cmd = f"record --compression-mode {compression.mode} --compression-format {compression.format} -o {self.output} {self.topics}"
+            cmd = f"record -s mcap --compression-mode {compression.mode} --compression-format {compression.format} -o {self.output} {self.topics}"
         else:
-            cmd = f"record -o {self.output} {self.topics}"
+            cmd = f"record -s mcap --storage-preset-profile zstd_fast -o {self.output} {self.topics}"
         logger.info(f"Rosbag command: {cmd}")
         super().__init__(
             id="rosbag_service",

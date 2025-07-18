@@ -14,10 +14,10 @@ def get_rosbag_db_path(path: str) -> str:
     files = os.listdir(path)
 
     for file in files:
-        if file.endswith(".db3"):
+        if file.endswith((".db3", ".mcap")):
             return os.path.join(path, file)
 
-    raise Exception("Could not find a .db file")
+    raise Exception("Could not find a .db or a .mcap file")
 
 
 def get_rosbag_metadata_path(path: str) -> str:
