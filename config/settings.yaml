@@ -40,7 +40,7 @@ managers:
           exec: "lidar.launch.py"
           env:
               RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-              CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
+              CYCLONEDDS_URI: file:///home/smapper/smapper/config/network/cyclonedds.xml
 
         - name: Argus Cameras (4x)
           id: cameras_srv
@@ -52,7 +52,7 @@ managers:
           exec: "argus_cameras.launch.py"
           env:
               RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-              CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
+              CYCLONEDDS_URI: file:///home/smapper/smapper/config/network/cyclonedds.xml
 
         - name: Intel Realsense D435i
           id: realsense_srv 
@@ -64,7 +64,7 @@ managers:
           exec: "realsense.launch.py"
           env:
               RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-              CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
+              CYCLONEDDS_URI: file:///home/smapper/smapper/config/network/cyclonedds.xml
 
         - name: Odometry
           id: odometry_srv
@@ -76,7 +76,7 @@ managers:
           exec: "ros2-lidar-odometry.launch.py lidar_topic_name:=ouster/points imu_topic_name:=/ouster/imu use_state_estimator:=True publish_localization_following_rep105:=False enforce_planar_motion:=True use_mola_gui:=False use_rviz:=False mola_lo_reference_frame:=odom mola_state_estimator_reference_frame:=odom"
           env:
               RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-              CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
+              CYCLONEDDS_URI: file:///home/smapper/smapper/config/network/cyclonedds.xml
 
         - name: Rosboard (Visualizer)
           id: rosboard_srv
@@ -86,7 +86,7 @@ managers:
           cmd: "./run"
           env:
               RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-              CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
+              CYCLONEDDS_URI: file:///home/smapper/smapper/config/network/cyclonedds.xml
 
         - name: Device Sensors Transforms
           id: transorms_srv
@@ -98,7 +98,7 @@ managers:
           exec: "handheld_device_tf.launch.py"
           env:
               RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-              CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
+              CYCLONEDDS_URI: file:///home/smapper/smapper/config/network/cyclonedds.xml
 
     ros:
         topic_monitor:
@@ -124,7 +124,7 @@ managers:
             storage_dir: "/bags"
             env:
                 RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-                CYCLONEDDS_URI: file:///home/smapper/cyclonedds.xml
+                CYCLONEDDS_URI: file:///home/smapper/smapper/config/network/cyclonedds.xml
             ws: "$HOME/smapper/software/ros_ws"
             presets:
                 cameras:
@@ -179,3 +179,4 @@ device:
           model: Intel Realsense D435i
           type: CAMERA
           service_id: realsense_srv
+
